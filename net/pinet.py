@@ -1,5 +1,3 @@
-# Requires Python 3.8
-
 # Imports
 import socket
 import threading
@@ -10,40 +8,6 @@ from typing import Union, List
 
 # Constants
 NETWORK_TIMEOUT = 0.1
-
-""" The standard exception type to be thrown by instances of PiNet at runtime.
-"""
-class PiNetError(Exception):
-	pass
-
-
-""" The standard exception type to be thrown by instances of ArduinoNet at
-	runtime.
-"""
-class ArduinoNetError(Exception):
-	pass
-
-
-""" Encapsulates data to facilitate ownership by local software and usage for
-	data requests by peers in the PiNet and ArduinoNet classes.
-
-As Python python does not have C/C++ style pointers, it is necessary to pass
-	variables by reference in order for the caller of this module to maintain
-	ownership of them. The NetData class is to be instantiated by the caller and
-	provided to instances of PiNet or ArduinoNet with the RegisterNetDataObj()
-	methods.
-"""
-class NetData:
-	""" Constructs and instance of the NetData class.
-
-	name - A string representing the data housed by the object. Peers will
-		refer to specific variables by this name.
-	value - The object to be held by this instance. value should only be a basic
-		data type available in Python.
-	"""
-	def __init__(self, name: str, value: any) -> None:
-		self.name = name
-		self.value = value
 
 """ PiNet is an asynchronous socket wrapper to facilitate communications between
 	different Raspberry Pi computers (and indeed other computers). The class is
@@ -352,14 +316,3 @@ class PiNet:
 			return list(self.__clients.keys())
 		else:
 			raise PiNetError("Invalid operation for clients.")
-
-
-""" TODO, a similar implementation of PiNet for Arduino computers over USB
-"""
-class ArduinoNet(PiNet):
-	def __init__(self) -> None:
-		pass
-
-	def __del__(self) -> None:
-		pass
-
