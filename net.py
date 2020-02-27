@@ -66,7 +66,7 @@ class PiNet:
 	"""
 	def __init__(self, isServer: bool, address: (str, int)) -> None:
 		socket.setdefaulttimeout(NETWORK_TIMEOUT)
-		if not 0 <= port <= 65535:
+		if not 0 <= address[1] <= 65535:
 			raise PiNetError("Invalid port.")
 		self.__address = address
 		self.__isServer = isServer
