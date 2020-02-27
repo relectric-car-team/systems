@@ -1,26 +1,19 @@
-# Requires Python 3.8
-
 # Imports
 import socket
 import threading
 import json
 import random
 import time
+import logging as log
 from typing import Union, List
 
 # Constants
 NETWORK_TIMEOUT = 0.1
 
+
 """ The standard exception type to be thrown by instances of PiNet at runtime.
 """
 class PiNetError(Exception):
-	pass
-
-
-""" The standard exception type to be thrown by instances of ArduinoNet at
-	runtime.
-"""
-class ArduinoNetError(Exception):
 	pass
 
 
@@ -44,6 +37,7 @@ class NetData:
 	def __init__(self, name: str, value: any) -> None:
 		self.name = name
 		self.value = value
+
 
 """ PiNet is an asynchronous socket wrapper to facilitate communications between
 	different Raspberry Pi computers (and indeed other computers). The class is
@@ -84,6 +78,8 @@ class PiNet:
 		if not self.__conn["isRunning"]:
 			self.__dataObjs.append(obj)
 		else:
+			log.warning("Cannot register data objects once the connection " \
+				"is active.")
 			raise PiNetError("Cannot register data objects once the connection " \
 				"is active.")
 
@@ -91,8 +87,8 @@ class PiNet:
 		connection with other computers. Note that registerNetDataObj may not be
 		called once the connection is running.
 
-	Raises PiNetError 'Already running.' if start() has already been called for
-		the present instance.
+	Raises PiNetError 'Socket connection already running.' if the socket is
+		already connected.
 	"""
 	def start(self) -> None:
 		if self.__conn["thread"] == None:
@@ -104,14 +100,17 @@ class PiNet:
 				self.__conn["conn"].bind(self.__address)
 				self.__conn["thread"].start()
 				self.__conn["conn"].listen()
+				log.info("Server listening for clients on {0}.".format(self.__address))
 			else:
 				self.__conn["isRunning"] = True
 				self.__conn["thread"] = threading.Thread(target=self.__tendServer)
 				self.__conn["conn"] = socket.socket()
 				self.__conn["conn"].connect(self.__address)
 				self.__conn["thread"].start()
+				log.info("Client connected to server at {0}.".format(self.__address))
 		else:
-			raise PiNetError("Already running.")		
+			log.error("Socket connection already running")
+			raise PiNetError("Socket connection already running.")		
 
 	""" Called asynchronously in server instances to constantly listen for remote
 	clients attempting to connect.
@@ -122,14 +121,17 @@ class PiNet:
 			host = None
 			try:
 				conn, host = self.__conn["conn"].accept()
+			except:
+				# This will be caught often as it's expected to time out continually
+				pass
+			else:
 				self.__clients[str(host[1])] = {"thread": None, "conn": conn,
 					"isRunning": True, "host": host}
 				thread = threading.Thread(target=self.__tendClient, 
 					args=[self.__clients[str(host[1])]])
 				self.__clients[str(host[1])]["thread"] = thread
 				thread.start()
-			except:
-				pass
+				log.info("Client connected from {0}.".format(host))
 
 	""" Called by an asynchronous thread servicing a connection to receive
 		messaged from its peer and address them accordingly.
@@ -145,8 +147,10 @@ class PiNet:
 			if self.__isServer:
 				peer["isRunning"] = False
 				peer["conn"].close()
+				log.info("Client connection closed by peer from {0}.".format(peer["host"]))
 				self.__clients.pop(str(peer["host"][1]))
 			else:
+				log.info("Connection closed by server from {0}".format(self.__address))
 				self.__conn["isRunning"] = False
 			return
 		elif "responseKey" in request:
@@ -223,9 +227,13 @@ class PiNet:
 			if self.__isServer:
 				for host, client in self.__clients.items():
 					if client == peer:
+						log.error("Failed to send message to client at {0}, " \
+							"closing socket.".format(peer["host"]))
 						self.__clients.pop(host)
 						break
 			else:
+				log.error("Failed to send message to server at {0}, " \
+					"closing socket.".format(self.__address))
 				self.__conn["thread"] = None
 
 	""" Creates a JSON string of all NetData objects registered with the PiNet
@@ -251,7 +259,7 @@ class PiNet:
 
 	Raises PiNetError 'Target not specified for the request' when the target
 		parameter is not given when called by a server instance of PiNet.
-	Raises PiNetError 'Target not specified for the request.' when the peer
+	Raises PiNetError 'Specified target is not available.' when the client peer
 		targeted by the operation is not connected.
 	"""
 	def poseQuery(self, names: List[int], target="") -> int:
@@ -266,8 +274,10 @@ class PiNet:
 						args=(self.__clients[target], requestPayload))
 					st.start()
 				else:
+					log.error("Specified target is not available.")
 					raise PiNetError("Specified target is not available.")
 			else:
+				log.error("Target not specified for the request.")
 				raise PiNetError("Target not specified for the request.")
 		else:
 			st = threading.Thread(target=self.__sendMsg, 
@@ -285,6 +295,7 @@ class PiNet:
 	"""
 	def __registerResponse(self) -> int:
 		if len(self.__responses) == 256:
+			log.critical("Fatal, maximum number of pending responses exceeded.")
 			raise PiNetError("Fatal, maximum number of pending responses exceeded.")
 		key = random.randint(0, 255)
 		while key in self.__responses:
@@ -319,6 +330,7 @@ class PiNet:
 		self.__conn["isRunning"] = False
 		self.__conn["thread"].join()
 		if self.__isServer:
+			log.info("Stopping server.")
 			for host, client in self.__clients.items():
 				client["isRunning"] = False
 				client["thread"].join()
@@ -329,6 +341,7 @@ class PiNet:
 				finally:
 					time.sleep(NETWORK_TIMEOUT)
 				client["conn"].close()
+				log.info("Closing client connection at {0}.".format(client["host"]))
 		else:
 			try:
 				self.__conn["conn"].sendall(closePayload)
@@ -337,6 +350,7 @@ class PiNet:
 			finally:
 				time.sleep(NETWORK_TIMEOUT)
 		self.__conn["conn"].close()
+		log.info("Closing server connection at {0}.".format(self.__address))
 		return
 
 	""" Returns a list of all the connected client's host names. The names are
@@ -351,15 +365,6 @@ class PiNet:
 		if self.__isServer:
 			return list(self.__clients.keys())
 		else:
+			log.warning("Clients should not call getConnected().")
 			raise PiNetError("Invalid operation for clients.")
-
-
-""" TODO, a similar implementation of PiNet for Arduino computers over USB
-"""
-class ArduinoNet(PiNet):
-	def __init__(self) -> None:
-		pass
-
-	def __del__(self) -> None:
-		pass
 
