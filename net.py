@@ -266,12 +266,17 @@ class PiNet:
 		the outgoing request is to be sent to. An exception will be raised if target
 		is its default value in this case.
 
+	Raises PiNetError 'Parameter names must be a non-empty string.' when called
+		with an empty names argument.
 	Raises PiNetError 'Target not specified for the request' when the target
 		parameter is not given when called by a server instance of PiNet.
 	Raises PiNetError 'Specified target is not available.' when the client peer
 		targeted by the operation is not connected.
 	"""
 	def poseQuery(self, names: List[str], target="") -> int:
+		if len(name) == 0:
+			raise PiNetError("Parameter names must be a non-empty string.")
+			log.error("poseQuery() - Parameter names must be a non-empty string")
 		requestKey = self.__registerResponse()
 		query = {"requestKey": requestKey, "query": names}
 		requestPayload = json.dumps(query, separators=(',', ':'))
