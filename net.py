@@ -91,6 +91,8 @@ class PiNet:
 		connection with other computers. Note that registerNetDataObj may not be
 		called once the connection is running.
 
+	Raises PiNetError 'Unable to connect to server.' if a connection with the
+		specified server cannot be established.
 	Raises PiNetError 'Socket connection already running.' if the socket is
 		already connected.
 	"""
@@ -106,12 +108,17 @@ class PiNet:
 				self.__conn["conn"].listen()
 				log.info("Server listening for clients on {0}.".format(self.__address))
 			else:
-				self.__conn["isRunning"] = True
-				self.__conn["thread"] = threading.Thread(target=self.__tendServer)
-				self.__conn["conn"] = socket.socket()
-				self.__conn["conn"].connect(self.__address)
-				self.__conn["thread"].start()
-				log.info("Client connected to server at {0}.".format(self.__address))
+				try:
+					self.__conn["conn"] = socket.socket()
+					self.__conn["conn"].connect(self.__address)
+				except:
+					log.error("Unable to connect to server at {0}.".format(self.__address))
+					raise PiNetError("Unable to connect to server.")
+				else:
+					self.__conn["isRunning"] = True
+					self.__conn["thread"] = threading.Thread(target=self.__tendServer)
+					self.__conn["thread"].start()
+					log.info("Client connected to server at {0}.".format(self.__address))
 		else:
 			log.error("Socket connection already running")
 			raise PiNetError("Socket connection already running.")		
@@ -120,6 +127,22 @@ class PiNet:
 	"""
 	def isRunning() -> bool:
 		return self.__conn["isRunning"]
+
+
+	""" Updates the address of the connection. Can only be called if isRunning()
+		is False.
+
+	Raises PiNetError 'Cannot change the connection address while the conneciton
+		is active' if called when isRunning() is True.
+	"""
+	def setAddress(address: (str, int)) -> None:
+		if self.__conn["isRunning"]:
+			log.warning("Cannot change the connection address while the conneciton " \
+				"is active")
+			raise PiNetError("Cannot change the connection address while the " \
+				"conneciton is active")
+		else:
+			self.__address = address
 
 	""" Called asynchronously in server instances to constantly listen for remote
 	clients attempting to connect.
