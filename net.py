@@ -70,9 +70,13 @@ class PiNet:
 			"isRunning": False}
 
 	""" Registers a NetData object with the PiNet instance so it may be used to
-		service requests from peers.
+		service requests from peers. Can only be called when the connection is not
+		running.
 
 	obj - The NetData object to be registered.
+
+	Raises PiNetError 'Cannot register data objects once the connection is active'
+		when called on an instance with an active connection.
 	"""
 	def registerNetDataObj(self, obj: NetData) -> None:
 		if not self.__conn["isRunning"]:
@@ -95,7 +99,7 @@ class PiNet:
 			if self.__isServer:
 				self.__clients = {}
 				self.__conn["isRunning"] = True
-				self.__conn["thread"] = threading.Thread(target=self.__accpetClients)
+				self.__conn["thread"] = threading.Thread(target=self.__acceptClients)
 				self.__conn["conn"] = socket.socket()
 				self.__conn["conn"].bind(self.__address)
 				self.__conn["thread"].start()
@@ -112,10 +116,15 @@ class PiNet:
 			log.error("Socket connection already running")
 			raise PiNetError("Socket connection already running.")		
 
+	""" Returns a boolean indicating whether or not the connection is active.
+	"""
+	def isRunning() -> bool:
+		return self.__conn["isRunning"]
+
 	""" Called asynchronously in server instances to constantly listen for remote
 	clients attempting to connect.
 	"""
-	def __accpetClients(self) -> None:
+	def __acceptClients(self) -> None:
 		while self.__conn["isRunning"]:
 			conn = None
 			host = None
@@ -262,7 +271,7 @@ class PiNet:
 	Raises PiNetError 'Specified target is not available.' when the client peer
 		targeted by the operation is not connected.
 	"""
-	def poseQuery(self, names: List[int], target="") -> int:
+	def poseQuery(self, names: List[str], target="") -> int:
 		requestKey = self.__registerResponse()
 		query = {"requestKey": requestKey, "query": names}
 		requestPayload = json.dumps(query, separators=(',', ':'))
@@ -326,32 +335,32 @@ class PiNet:
 		and kills all open threads.
 	"""
 	def stop(self) -> None:
-		closePayload = json.dumps("closing", separators=(',', ':')).encode()
-		self.__conn["isRunning"] = False
-		self.__conn["thread"].join()
-		if self.__isServer:
-			log.info("Stopping server.")
-			for host, client in self.__clients.items():
-				client["isRunning"] = False
-				client["thread"].join()
+		if self.__conn["isRunning"]:
+			closePayload = json.dumps("closing", separators=(',', ':')).encode()
+			self.__conn["isRunning"] = False
+			self.__conn["thread"].join()
+			if self.__isServer:
+				log.info("Closing client listener at {0}.".format(self.__address))
+				for host, client in self.__clients.items():
+					client["isRunning"] = False
+					client["thread"].join()
+					try:
+						client["conn"].sendall(closePayload)
+					except:
+						pass
+					finally:
+						time.sleep(NETWORK_TIMEOUT)
+					client["conn"].close()
+					log.info("Closing client connection at {0}.".format(client["host"]))
+			else:
+				log.info("Closing server connection at {0}.".format(self.__address))
 				try:
-					client["conn"].sendall(closePayload)
+					self.__conn["conn"].sendall(closePayload)
 				except:
 					pass
 				finally:
 					time.sleep(NETWORK_TIMEOUT)
-				client["conn"].close()
-				log.info("Closing client connection at {0}.".format(client["host"]))
-		else:
-			try:
-				self.__conn["conn"].sendall(closePayload)
-			except:
-				pass
-			finally:
-				time.sleep(NETWORK_TIMEOUT)
-		self.__conn["conn"].close()
-		log.info("Closing server connection at {0}.".format(self.__address))
-		return
+			self.__conn["conn"].close()
 
 	""" Returns a list of all the connected client's host names. The names are
 		used to target peers when performing operations as a server instance.

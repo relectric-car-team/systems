@@ -2,4 +2,5 @@ TODO
 	- Message bound detection
 	- Verify connections when getConnected in called
 	- Address connection failure from clients
-	- Address and TODO notes made inline
+	- Address and TODO notes made 
+	- PoseQuery exception when given empty list of names
