@@ -1,5 +1,2 @@
 TODO
-	- Message bound detection/re-factor to a format smaller than JSON
-	- Verify connections when getConnected in called
-	- Address connection failure from clients
 	- Address any TODO notes made
