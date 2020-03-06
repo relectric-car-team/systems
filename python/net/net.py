@@ -1,4 +1,4 @@
-# Imports
+# Standard Imports
 import socket
 import threading
 import json
@@ -7,13 +7,24 @@ import time
 import logging as log
 from typing import Union, List
 
+# Additional Imports
+import serial # pip install pyserial
+
 # Constants
 NETWORK_TIMEOUT = 0.1
+USB_BAUD = 19200 # 2.4kb/s
+USB_TIMEOUT = NETWORK_TIMEOUT
 
 
 """ The standard exception type to be thrown by instances of PiNet at runtime.
 """
 class PiNetError(Exception):
+	pass
+
+
+""" The standard exception type to be thrown by instances of ArduinoNet at runtime.
+"""
+class ArduinoNetError(Exception):
 	pass
 
 
@@ -132,15 +143,15 @@ class PiNet:
 	""" Updates the address of the connection. Can only be called if isRunning()
 		is False.
 
-	Raises PiNetError 'Cannot change the connection address while the conneciton
+	Raises PiNetError 'Cannot change the connection address while the connection
 		is active' if called when isRunning() is True.
 	"""
 	def setAddress(address: (str, int)) -> None:
 		if self.__conn["isRunning"]:
-			log.warning("Cannot change the connection address while the conneciton " \
+			log.warning("Cannot change the connection address while the connection " \
 				"is active")
 			raise PiNetError("Cannot change the connection address while the " \
-				"conneciton is active")
+				"connection is active")
 		else:
 			self.__address = address
 
@@ -405,3 +416,79 @@ class PiNet:
 			log.warning("Clients should not call getConnected().")
 			raise PiNetError("Invalid operation for clients.")
 
+
+"""
+"""
+class ArduinoNet():
+	"""
+	"""
+	def __init__(self, port: str) -> None:
+		self.__port = port
+		self.__conn = serial.Serial(port, USB_BAUD)
+		self.__establishContact()
+		self.__conn.timeout = USB_TIMEOUT
+		log.info("Serial connection established on port {0}.".format(self.__port))
+		self.__running = True
+
+	"""
+	"""
+	def __establishContact(self) -> None:
+		if self.__conn.read() == b'$':
+			self.__conn.write(b'$')
+		else:
+			log.error("Unable to establish serial contact on port {0}.".format(self.__port))
+			raise ArduinoNetError("Unable to establish serial contact.")
+
+	"""
+	"""
+	def sendData(self, data: Union[int, float], key: int) -> None:
+		if 1 <= key <= 65536:
+			payload = key.to_bytes(2, "big")
+			if type(data) == int:
+				payload = payload + data.to_bytes(2, "big")
+			elif type(data) = float:
+				payload = payload + data.to_bytes(4, "big")
+			st = threading.thread(target=self.__send(), args=(payload))
+			st.start()
+		else:
+			log.error("Data key {0} out of range.".format(key))
+			raise ArduinoNetError("Data key out of range.")
+
+	"""
+	"""
+	def __send(self, payload: bytes) -> None:
+		try:
+			self.__conn.write(payload)
+		except:
+			log.error("Serial connection failure on port {0}.".format(self.__port))
+			raise ArduinoNetError("Serial connection failure.")
+
+	"""
+	"""
+	def getData(self) -> Union[int, float]:
+		data = None
+		try:
+			key = self.__conn.read(2)
+		except:
+			pass # TODO
+		key = int.from_bytes(key, "big")
+		if key % 2 = 0:
+			try:
+				data = self.__conn.read(2)
+			except:
+				pass
+		else:
+			try:
+				data = self.__conn.read(4)
+			except:
+				pass
+		return data
+
+	"""
+	"""
+	def stop(self) -> None:
+		try:
+			self.__conn.write(bytes(1))
+		except:
+			pass
+		self.__conn.close()
