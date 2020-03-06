@@ -185,9 +185,9 @@ class PiNet:
 	"""
 	def __handleMsg(self, peer: dict) -> None:
 		request = self.__recvMsg(peer)
-		if request == "":
+		if message == "":
 			return
-		elif request == "closing":
+		elif message == "closing":
 			if self.__isServer:
 				peer["isRunning"] = False
 				peer["conn"].close()
@@ -197,19 +197,19 @@ class PiNet:
 				log.info("Connection closed by server from {0}".format(self.__address))
 				self.__conn["isRunning"] = False
 			return
-		elif "responseKey" in request:
-			self.__responses[request["responseKey"]] = request
-		elif "msg" in request:
+		elif "responseKey" in message:
+			self.__responses[request["responseKey"]] = message
+		elif "msg" in message:
 			self.__messages.append(request)
 		else:
 			response = {}
-			if "query" in request and request["query"][0] == "total_data":
+			if "query" in message and message["query"][0] == "total_data":
 				response = self.__makeTotalNetDataPayload()
-			elif "query" in request:
+			elif "query" in message:
 				for i in self.__dataObjs:
-					if i.name in request["query"]:
+					if i.name in message["query"]:
 						response[i.name] = i.value
-			response["responseKey"] = request["requestKey"]
+			response["responseKey"] = message["requestKey"]
 			if len(response) > 0:
 				payload = json.dumps(response, separators=(',', ':'))
 				st = threading.Thread(target=self.__send, args=(peer, payload))
