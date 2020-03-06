@@ -5,7 +5,7 @@ import json
 import random
 import time
 import logging as log
-from typing import Union, List
+from typing import Union, List, Dict
 
 # Additional Imports
 import serial # pip install pyserial
@@ -76,6 +76,7 @@ class PiNet:
 		self.__address = address
 		self.__isServer = isServer
 		self.__responses = {}
+		self.__messages = []
 		self.__dataObjs = []
 		self.__conn = {"thread": None, "conn": None, "host": None,
 			"isRunning": False}
@@ -182,7 +183,7 @@ class PiNet:
 	peer - The connection-specification dictionary for the client to be
 		serviced.
 	"""
-	def __handleRequest(self, peer: dict) -> None:
+	def __handleMsg(self, peer: dict) -> None:
 		request = self.__recvMsg(peer)
 		if request == "":
 			return
@@ -198,6 +199,8 @@ class PiNet:
 			return
 		elif "responseKey" in request:
 			self.__responses[request["responseKey"]] = request
+		elif "msg" in request:
+			self.__messages.append(request)
 		else:
 			response = {}
 			if "query" in request and request["query"][0] == "total_data":
@@ -209,7 +212,7 @@ class PiNet:
 			response["responseKey"] = request["requestKey"]
 			if len(response) > 0:
 				payload = json.dumps(response, separators=(',', ':'))
-				st = threading.Thread(target=self.__sendMsg, args=(peer, payload))
+				st = threading.Thread(target=self.__send, args=(peer, payload))
 				st.start()
 
 	""" Called asynchronously in server instances to service a connection opened
@@ -220,7 +223,7 @@ class PiNet:
 	"""
 	def __tendClient(self, peer: dict) -> None:
 		while peer["isRunning"]:
-			self.__handleRequest(peer)
+			self.__handleMsg(peer)
 
 	""" Called asynchronously in client instances to service a connection opened
 		with a server.
@@ -230,7 +233,7 @@ class PiNet:
 	"""
 	def __tendServer(self) -> None:
 		while self.__conn["isRunning"]:
-			self.__handleRequest(self.__conn)
+			self.__handleMsg(self.__conn)
 
 	""" Called by an asynchronous thread to receive messages from a specified
 		peer.
@@ -260,7 +263,7 @@ class PiNet:
 		be sent to.
 	payload - A string containing the message to be sent.
 	"""
-	def __sendMsg(self, peer, payload: str) -> None:
+	def __send(self, peer, payload: str) -> None:
 		try:
 			peer["conn"].sendall(payload.encode())
 		except:
@@ -318,7 +321,7 @@ class PiNet:
 			target = str(target)
 			if target != "":
 				if target in self.__clients and self.__clients[target]["isRunning"]:
-					st = threading.Thread(target=self.__sendMsg, 
+					st = threading.Thread(target=self.__send, 
 						args=(self.__clients[target], requestPayload))
 					st.start()
 				else:
@@ -328,10 +331,60 @@ class PiNet:
 				log.error("Target not specified for the request.")
 				raise PiNetError("Target not specified for the request.")
 		else:
-			st = threading.Thread(target=self.__sendMsg, 
+			st = threading.Thread(target=self.__send, 
 				args=(self.__conn, requestPayload))
 			st.start()
 		return requestKey
+
+	""" Sends a message to a peer. Unlike poseQuery(), a response from the peer is
+		not expected.
+
+	msg = A string containing the message to be sent.
+	target - If the caller is a server, it is necessary to specify which client
+		the outgoing message is to be sent to. An exception will be raised if target
+		is its default value in this case.
+	desc - An optional string identifier for the recipient to differentiate
+		messages of different purposes with.
+
+	Raises PiNetError 'Target not specified for the message' when the target
+		parameter is not given when called by a server instance of PiNet.
+	Raises PiNetError 'Specified target is not available.' when the client peer
+		targeted by the operation is not connected.
+	"""
+	def sendMsg(self, msg:str, desc="", target="") -> None:
+		msgPayload = {"msg": msg, "type": desc}
+		msgPayload = json.dumps(msgPayload , separators=(',', ':'))
+		if self.__isServer:
+			target = str(target)
+			if target != "":
+				if target in self.__clients and self.__clients[target]["isRunning"]:
+					st = threading.Thread(target=self.__send, 
+						args=(self.__clients[target], msgPayload))
+					st.start()
+				else:
+					log.error("Specified target is not available.")
+					raise PiNetError("Specified target is not available.")
+			else:
+				log.error("Target not specified for the message.")
+				raise PiNetError("Target not specified for the message.")
+		else:
+			st = threading.Thread(target=self.__send, args=(self.__conn, msgPayload))
+			st.start()
+
+	""" Returns the most recent message received by a peer as a dictionary of
+		strings.
+	"""
+	def getMsg(self) -> Dict[str, str]:
+		if len(self.__messages) > 0:
+			return self.__messages.pop(0)
+
+	""" Returns a list of all pending messages received by peers as dictionaries
+		of strings.
+	"""
+	def getMsgs(self) -> List[Dict[str, str]]:
+		msgs = self.__messages.copy()
+		self.__messages.clear()
+		return msgs
 
 	""" Called by a method dispatching a request to obtain a responseKey so that
 		any data returned in a response may be obtained after with getResponse().
@@ -446,7 +499,7 @@ class ArduinoNet():
 			payload = key.to_bytes(2, "big")
 			if type(data) == int:
 				payload = payload + data.to_bytes(2, "big")
-			elif type(data) = float:
+			elif type(data) == float:
 				payload = payload + data.to_bytes(4, "big")
 			st = threading.thread(target=self.__send(), args=(payload))
 			st.start()
@@ -472,7 +525,7 @@ class ArduinoNet():
 		except:
 			pass # TODO
 		key = int.from_bytes(key, "big")
-		if key % 2 = 0:
+		if key % 2 == 0:
 			try:
 				data = self.__conn.read(2)
 			except:
