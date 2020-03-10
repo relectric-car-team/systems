@@ -561,7 +561,7 @@ class ArduinoNet():
 	""" Returns a tuple of the form (value, key) and types ([float|int], int)
 		containing the most recent message stored in the serial receive buffer.
 	"""
-	def getData(self) -> Union[int, float], int:
+	def getData(self) -> (Union[int, float], int):
 		data = None
 		try:
 			key = self.__conn.read(2)
