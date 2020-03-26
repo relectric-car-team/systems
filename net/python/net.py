@@ -529,14 +529,26 @@ class ArduinoNet():
 
 	Raises ArduinoNetError 'Data key out of range.' when the provided key is not
 		1 <= k <= 65536.
+	Raises ArduinoNetError 'Integer data keys must be even.' if the provided key
+		is odd and type(data) == int.
+	Raises ArduinoNetError 'Float data keys must be odd.' if the provided key
+		is even and type(float) == int.
 	"""
 	def sendData(self, data: Union[int, float], key: int) -> None:
 		if 1 <= key <= 65536:
 			payload = key.to_bytes(2, "big")
 			if type(data) == int:
-				payload = payload + data.to_bytes(2, "big")
+				if key % 2 == 0:
+					payload = payload + data.to_bytes(2, "big")
+				else:
+					log.error("Integer data keys must be even.")
+					raise ArduinoNetError("Integer data keys must be even.")
 			elif type(data) == float:
-				payload = payload + data.to_bytes(4, "big")
+				if key % 2 == 1:
+					payload = payload + data.to_bytes(4, "big")
+				else:
+					log.error("Float data keys must be odd.")
+					raise ArduinoNetError("Float data keys must be odd.")
 			st = threading.thread(target=self.__send(), args=(payload))
 			st.start()
 		else:
