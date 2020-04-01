@@ -1,1 +1,7 @@
+#To read GNSS data and create a nevigation system
 
+#laika library?
+pip install numpy scipy
+python setup.py install
+sudo apt-get install libfreetype6-dev
+pip install -r requirements_examples.txt --user
