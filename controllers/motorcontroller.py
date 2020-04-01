@@ -1,0 +1,2 @@
+class MotorController():
+  pass
