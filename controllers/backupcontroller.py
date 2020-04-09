@@ -1,2 +1,4 @@
 class BackupController():
-  pass
+  TestData testData
+  def __init__(self):
+      testData.loadData()

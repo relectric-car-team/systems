@@ -1,2 +1,4 @@
 class SensorController():
-  pass
+  TestData testData
+  def __init__(self):
+      testData.loadData()
