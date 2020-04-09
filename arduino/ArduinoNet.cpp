@@ -1,6 +1,7 @@
 // Includes
 #include "ArduinoNet.h"
 #include <stdlib.h>
+#include "ArduinoNetError.h"
 
 // Constants
 #define USB_BAUD 19200
@@ -41,7 +42,7 @@ ArduinoNet::sendData(int data, int key) {
 		Serial.write(bData[0]);
 		Serial.write(bData[1]);
 	} else {
-		// Throw exception
+		throw ArduinoNetError("Invalid data ID, must be even for integers.");
 	}
 }
 
@@ -58,7 +59,7 @@ ArduinoNet::sendData(float data, int key) {
 			Serial.write(b);
 		}
 	} else {
-		// Throw exception
+		throw ArduinoNetError("Invalid data ID, must be odd for floats.");
 	}
 }
 

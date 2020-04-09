@@ -410,7 +410,7 @@ class PiNet:
 	key - The responseKey integer returned by the request dispatching function.
 	"""
 	def getResponse(self, key: int) -> Union[dict, None]:
-		if key in self.__responses:
+		if key in self.__responses and self.__responses[key] != None:
 			return self.__responses.pop(key)
 		else:
 			return None
@@ -419,9 +419,9 @@ class PiNet:
 		pairs, flushing the internal storage.
 	"""
 	def getResponses(self) -> dict:
-		r = self.__responses
-		self.__responses = {}
-		return r
+		responses = {i:r for (i,r) in self.__responses.items() if r != None}
+		self.__responses = {i:r for (i,r) in self.__responses.items() if r == None}
+		return responses
 
 	""" Correctly terminates a connection with peers as soon as possible
 		and kills all open threads.
@@ -453,6 +453,8 @@ class PiNet:
 				finally:
 					time.sleep(NETWORK_TIMEOUT)
 			self.__conn["conn"].close()
+			self.__responses = {}
+			self.__messages	= []
 
 	""" Returns a list of all the connected client's host names. The names are
 		used to target peers when performing operations as a server instance.
