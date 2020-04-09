@@ -1,20 +1,36 @@
 from typing import Tuple
+from controller import *
+from controllerdata import *
+from controllers import *
 
 class Systems():
+  
   def __init__(self):
-    pass
+    self.controllers = [];
+    controllers[0] = MotorController
+    controllers[1] = BatteryController
+    controllers[2] = ClimateController
+    controllers[3] = SensorController
+    controllers[4] = BackupController
 
-  def registerVariable(self, name: str, value: any, variableType: any) -> str:
-    pass
+  def get(name: str) -> any:
+    for i in controllers:
+      if name in controllers[i].variables:
+        return controllers[i].variables[name].value
+    return null
 
-  def setVariable(self, name: str, value: any) -> None:
-    pass
+  def set(name: str, value: any) -> None:
+    for i in controllers:
+      if name in controllers[i].variables:
+        controllers[i].variables[name].value = value  
 
-  def registerAction(self, name: str, callback: any) -> None:
-    pass
+  def sendAction(name: str, args: Tuple[any]) -> None:
+    for i in controllers:
+      if name in controllers[i].actions:
+        controllers[i].performAction(controllers[i], name, args)
+        
 
-  def performAction(self, name: str, args: Tuple[any]) -> None:
-    pass
-
-  def shutdown(self):
-    pass
+  def shutdown(self) -> None:
+    for i in controllers:
+      controllers[i].shutdown()
+  
