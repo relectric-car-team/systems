@@ -20,8 +20,7 @@ class TestData():
         self.temperature = file["temperature"]
 
     def update(self) -> None:
-        file = open(CONST_FILE_NAME, "w")
-        #dont know what to update with to be continued...
+        self.time = self.time + 1
 
     def get(self, name: str) -> None:
         if name == "speed":
@@ -32,4 +31,3 @@ class TestData():
             return self.RPM[self.time]
         elif name == "temperature":
             return self.temperature[self.time]
-        self.time = self.time + 1
