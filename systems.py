@@ -1,7 +1,7 @@
 from typing import Tuple
 from controller import *
 from controllerdata import *
-#from controllers import *
+from controllers import *
 
 class Systems():
   
@@ -12,19 +12,17 @@ class Systems():
     controllers[2] = ClimateController
     controllers[3] = SensorController
     controllers[4] = BackupController
-    print("here")
 
   def get(name: str) -> any:
     for i in controllers:
-      for j in controllers[i].variables:
-        if(controllers[i].name == name):
-          return controllers[i].value
+      if name in controllers[i].variables:
+        return controllers[i].variables[name].value
     return null
 
   def set(name: str, value: any) -> None:
     for i in controllers:
       if name in controllers[i].variables:
-        controllers[i].value = value  
+        controllers[i].variables[name].value = value  
 
   def sendAction(name: str, args: Tuple[any]) -> None:
     for i in controllers:
@@ -35,5 +33,4 @@ class Systems():
   def shutdown(self) -> None:
     for i in controllers:
       controllers[i].shutdown()
-    
-Systems s
+  
