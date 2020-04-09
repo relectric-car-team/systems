@@ -419,8 +419,6 @@ class PiNet:
 		pairs, flushing the internal storage.
 	"""
 	def getResponses(self) -> dict:
-		# responses = self.__responses
-		# self.__responses = {}
 		responses = {i:r for (i,r) in self.__responses.items() if r != None}
 		self.__responses = {i:r for (i,r) in self.__responses.items() if r == None}
 		return responses
