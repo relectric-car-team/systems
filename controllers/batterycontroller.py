@@ -1,6 +1,6 @@
 class BatteryController():
-  TestData testData
-  canBus CANBusController
+  testData
+  CANBusController
   def __init__(self):
-      testData.loadData()
-      CANBusController = new canBus() #uhm not sure what or how to initialize this
+     self. testData.loadData()
+     self.CANBusController = new canBus() #uhm not sure what or how to initialize this

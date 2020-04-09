@@ -1,6 +1,6 @@
 class ClimateController():
-  TestData testData
-  canBus CANBusController
+  testData
+  CANBusController
   def __init__(self):
-      testData.loadData()
-      CANBusController = new canBus()
+      self.testData.loadData()
+      self.CANBusController = new canBus()

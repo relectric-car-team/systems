@@ -1,24 +1,16 @@
 import sys object
 class MotorController():
-    TestData testData
-    canBus CANBusController
-    double speed
-    double voltage
-    double temperature
-    double RPM
+    testData
+    CANBusController
+    speed
+    voltage
+    temperature
+    RPM
 
     def __init__(self):
-        testData.loadData()
-        CANBusController = new canBus()
-        speed = testData.get("speed")
-        voltage = testData.get("voltage")
-        temperature = testData.get("temperature")
-        RPM = testData.get("RPM")
-        Stop()
-        Shutdown()
-
-
-    def Stop(self):
-        exit()
-    def Shutdown(self):
-        pass
+        self.testData.loadData()
+        self.CANBusController = new canBus()
+        self.speed = testData.get("speed")
+        self.voltage = testData.get("voltage")
+        self.temperature = testData.get("temperature")
+        self.RPM = testData.get("RPM")
