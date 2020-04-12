@@ -67,5 +67,9 @@ ArduinoNet::sendData(float data, int key) {
 
  */
 ArduinoNet::getData() {
-	
+	if (Serial.available() == 2) {
+		byte inKey[2];
+		inKey[0] = (byte) Serial.read();
+		inKey[1] = (byte) Serial.read();
+	}
 }
