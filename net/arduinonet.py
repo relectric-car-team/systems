@@ -77,13 +77,13 @@ class ArduinoNet():
 		if 1 <= key <= 65536:
 			payload = key.to_bytes(2, "big")
 			if type(data) == int:
-				if key % 2 == 0:
+				if key % 2 == 0: # Int
 					payload = payload + data.to_bytes(2, "big")
 				else:
 					log.error("Integer data keys must be even.")
 					raise ArduinoNetError("Integer data keys must be even.")
 			elif type(data) == float:
-				if key % 2 == 1:
+				if key % 2 == 1: # Float
 					payload = payload + data.to_bytes(4, "big")
 				else:
 					log.error("Float data keys must be odd.")

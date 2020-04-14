@@ -1,6 +1,8 @@
 #include <iostream>
 #include <exception>
 
+/* Exception class for ArduinoNet.
+ */
 class ArduinoNetError : public std::exception {
 const char* file;
 int line;
