@@ -37,13 +37,10 @@ key - The integer key that identifies the meaning of the value. The key must be
 	and even integer k such that 0 < k <= 65536.
  */
 void ArduinoNet::sendData(int data, int key) {
-	if (key % 2 == 0) {
-		byte * bKey = (byte*) &key;
-		byte * bData = (byte*) &data;
-		Serial.write(bKey, 2);
-		Serial.write(bData, 2);
-	} else {
-	}
+	byte * bKey = (byte*) &key;
+	byte * bData = (byte*) &data;
+	Serial.write(bKey, 2);
+	Serial.write(bData, 2);
 }
 
 /* Sends the float data to the connected computer. The idenfifier key must be an
@@ -54,33 +51,33 @@ key - The integer key that identifies the meaning of the value. The key must be
 	and odd integer k such that 0 < k <= 65536.
  */
 void ArduinoNet::sendData(float data, int key) {
-	if (key % 2 == 1) {
-		byte * bKey = (byte*) &key;
-		byte * bData = (byte*) &data;
-		Serial.write(bKey, 2);
-		Serial.write(bData, 4);
-	} else {
-	}
+	byte * bKey = (byte*) &key;
+	byte * bData = (byte*) &data;
+	Serial.write(bKey, 2);
+	Serial.write(bData, 4);
 }
 
 /* Retrieves the most recently recieved data from the connected computer as an
-	msg struct.
+	msg struct. If no such message exists, retruns and msg where key == 0.
  */
 msg ArduinoNet::getData() {
+  msg inPayload;
+  inPayload.key = 0;
+  inPayload.iData = 0;
+  inPayload.fData = 0.0;
 	if (Serial.available() == 2) {
 		byte bKey[2];
 		Serial.readBytes(bKey, 2);
-		msg inPayload;
-		inPayload.key = (int*) bKey;
-		int key = (bKey[1] << 8) + bKey[0];
-		if (key % 2 == 0) { // Int
+		inPayload.key = (bKey[1] << 8) + bKey[0];
+		if (inPayload.key % 2 == 0) { // Int
 			byte bData[2];
 			Serial.readBytes(bData, 2);
-			inPayload.data = (void *) &bData;
+			inPayload.iData = (int) *bData;
 		} else { // Float
 			byte bData[4];
 			Serial.readBytes(bData, 4);
-			inPayload.data = (void *) &bData;
+			inPayload.fData = (float) *bData;
 		}
 	}
+ return inPayload;
 }

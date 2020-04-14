@@ -1,8 +1,9 @@
 /* Wrapper to contain the data returned by ArduinoNet.getData().
  */
 typedef struct structMsg {
-	void* data;
-	int* key;
+	int iData;
+  float fData;
+	int key;
 } msg;
 
 /* Serial communication library object, see ArduinoNet.cpp.
