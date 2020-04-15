@@ -47,19 +47,6 @@ class ArduinoNet():
 		log.info("Serial connection established on port {0}.".format(self.__port))
 		self.__running = True
 
-	""" Called to verify a new connection was successful and inform the Arduino
-		that a connection has been established correctly.
-
-	Raises ArduinoNetError 'Unable to establish serial contact.' if no response is
-		received in the timeout duration.
-	"""
-	def __establishContact(self) -> None:
-		if self.__conn.read() == b'$':
-			self.__conn.write(b'$')
-		else:
-			log.error("Unable to establish serial contact on port {0}.".format(self.__port))
-			raise ArduinoNetError("Unable to establish serial contact.")
-
 	""" Sends a value to the Arduino. The value's meaning can be specified by key,
 		and integer that is associated with a particular purpose, as determined by
 		the implementation using the class. Note that even numbered keys indicate
@@ -143,3 +130,16 @@ class ArduinoNet():
 		except:
 			pass
 		self.__conn.close()
+
+	""" Called to verify a new connection was successful and inform the Arduino
+		that a connection has been established correctly.
+
+	Raises ArduinoNetError 'Unable to establish serial contact.' if no response is
+		received in the timeout duration.
+	"""
+	def __establishContact(self) -> None:
+		if self.__conn.read() == b'$':
+			self.__conn.write(b'$')
+		else:
+			log.error("Unable to establish serial contact on port {0}.".format(self.__port))
+			raise ArduinoNetError("Unable to establish serial contact.")

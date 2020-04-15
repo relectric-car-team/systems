@@ -1,37 +1,12 @@
-# Standard Imports
-import socket
-import threading
-import json
-import random
-import time
-import logging as log
+# Imports
+import socket, threading, json, random, time, logging as log
 from typing import Union, List, Dict
 
 from pineterror import PiNetError
+from netdata import NetData
 
 # Constants
 NETWORK_TIMEOUT = 0.1
-
-""" Encapsulates data to facilitate ownership by local software and usage for
-	data requests by peers in the PiNet and ArduinoNet classes.
-
-As Python python does not have C/C++ style pointers, it is necessary to pass
-	variables by reference in order for the caller of this module to maintain
-	ownership of them. The NetData class is to be instantiated by the caller and
-	provided to instances of PiNet or ArduinoNet with the RegisterNetDataObj()
-	methods.
-"""
-class NetData:
-	""" Constructs and instance of the NetData class.
-
-	name - A string representing the data housed by the object. Peers will
-		refer to specific variables by this name.
-	value - The object to be held by this instance. value should only be a basic
-		data type available in Python.
-	"""
-	def __init__(self, name: str, value: any) -> None:
-		self.name = name
-		self.value = value
 
 
 """ PiNet is an asynchronous socket wrapper to facilitate communications between
@@ -124,7 +99,6 @@ class PiNet:
 	def isRunning() -> bool:
 		return self.__conn["isRunning"]
 
-
 	""" Updates the address of the connection. Can only be called if isRunning()
 		is False.
 
@@ -139,6 +113,220 @@ class PiNet:
 				"connection is active")
 		else:
 			self.__address = address
+
+	""" Makes a 'data_request' to a peer (who must be specified if called
+		by a server instance). Returns an responseKey integer to retrieve the
+		JSON returned by the peer with getResponse().
+
+	names - A list of NetData names to be requested of the peer. If only
+		'total_data', a response containing all of the NetData values maintained by
+		the peer will be sent as obtained from ____makeTotalNetDataPayload().
+	target - If the caller is a server, it is necessary to specify which client
+		the outgoing request is to be sent to. An exception will be raised if target
+		is its default value in this case.
+
+	Raises PiNetError 'Parameter names must be a non-empty string.' when called
+		with an empty names argument.
+	Raises PiNetError 'Target not specified for the request' when the target
+		parameter is not given when called by a server instance of PiNet.
+	Raises PiNetError 'Specified target is not available.' when the client peer
+		targeted by the operation is not connected.
+	"""
+	def poseQuery(self, names: List[str], target="") -> int:
+		if len(name) == 0:
+			raise PiNetError("Parameter names must be a non-empty string.")
+			log.error("poseQuery() - Parameter names must be a non-empty string")
+		requestKey = self.__registerResponse()
+		query = {"requestKey": requestKey, "query": names}
+		requestPayload = json.dumps(query, separators=(',', ':'))
+		if self.__isServer:
+			target = str(target)
+			if target != "":
+				if target in self.__clients and self.__clients[target]["isRunning"]:
+					st = threading.Thread(target=self.__send, 
+						args=(self.__clients[target], requestPayload))
+					st.start()
+				else:
+					log.error("Specified target is not available.")
+					raise PiNetError("Specified target is not available.")
+			else:
+				log.error("Target not specified for the request.")
+				raise PiNetError("Target not specified for the request.")
+		else:
+			st = threading.Thread(target=self.__send, 
+				args=(self.__conn, requestPayload))
+			st.start()
+		return requestKey
+
+	""" Sends a message to a peer. Unlike poseQuery(), a response from the peer is
+		not expected.
+
+	msg = A string containing the message to be sent.
+	target - If the caller is a server, it is necessary to specify which client
+		the outgoing message is to be sent to. An exception will be raised if target
+		is its default value in this case.
+	desc - An optional string identifier for the recipient to differentiate
+		messages of different purposes with.
+
+	Raises PiNetError 'Target not specified for the message' when the target
+		parameter is not given when called by a server instance of PiNet.
+	Raises PiNetError 'Specified target is not available.' when the client peer
+		targeted by the operation is not connected.
+	"""
+	def sendMsg(self, msg:str, desc="", target="") -> None:
+		msgPayload = {"msg": msg, "type": desc}
+		msgPayload = json.dumps(msgPayload , separators=(',', ':'))
+		if self.__isServer:
+			target = str(target)
+			if target != "":
+				if target in self.__clients and self.__clients[target]["isRunning"]:
+					st = threading.Thread(target=self.__send, 
+						args=(self.__clients[target], msgPayload))
+					st.start()
+				else:
+					log.error("Specified target is not available.")
+					raise PiNetError("Specified target is not available.")
+			else:
+				log.error("Target not specified for the message.")
+				raise PiNetError("Target not specified for the message.")
+		else:
+			st = threading.Thread(target=self.__send, args=(self.__conn, msgPayload))
+			st.start()
+
+	""" Returns the most recent message received by a peer as a dictionary of
+		strings.
+	"""
+	def getMsg(self) -> Dict[str, str]:
+		if len(self.__messages) > 0:
+			return self.__messages.pop(0)
+
+	""" Returns a list of all pending messages received by peers as dictionaries
+		of strings.
+	"""
+	def getMsgs(self) -> List[Dict[str, str]]:
+		msgs = self.__messages.copy()
+		self.__messages.clear()
+		return msgs
+
+	""" Called by a thread after dispatching a request to a peer to obtain
+		the returned JSON response. 
+
+	key - The responseKey integer returned by the request dispatching function.
+	"""
+	def getResponse(self, key: int) -> Union[dict, None]:
+		if key in self.__responses and self.__responses[key] != None:
+			return self.__responses.pop(key)
+		else:
+			return None
+		
+	""" Returns a dictionary containing all pending responseKey response value
+		pairs, flushing the internal storage.
+	"""
+	def getResponses(self) -> dict:
+		responses = {i:r for (i,r) in self.__responses.items() if r != None}
+		self.__responses = {i:r for (i,r) in self.__responses.items() if r == None}
+		return responses
+
+	""" Correctly terminates a connection with peers as soon as possible
+		and kills all open threads.
+	"""
+	def stop(self) -> None:
+		if self.__conn["isRunning"]:
+			closePayload = json.dumps("closing", separators=(',', ':')).encode()
+			self.__conn["isRunning"] = False
+			self.__conn["thread"].join()
+			if self.__isServer:
+				log.info("Closing client listener at {0}.".format(self.__address))
+				for host, client in self.__clients.items():
+					client["isRunning"] = False
+					client["thread"].join()
+					try:
+						client["conn"].sendall(closePayload)
+					except:
+						pass
+					finally:
+						time.sleep(NETWORK_TIMEOUT)
+					client["conn"].close()
+					log.info("Closing client connection at {0}.".format(client["host"]))
+			else:
+				log.info("Closing server connection at {0}.".format(self.__address))
+				try:
+					self.__conn["conn"].sendall(closePayload)
+				except:
+					pass
+				finally:
+					time.sleep(NETWORK_TIMEOUT)
+			self.__conn["conn"].close()
+			self.__responses = {}
+			self.__messages	= []
+
+	""" Returns a list of all the connected client's host names. The names are
+		used to target peers when performing operations as a server instance.
+		Peers reflected in this list are available to data transmission or
+		reception.
+
+	Raises PiNetError "Invalid operation for clients." when called from a client
+		instance.
+	"""
+	def getConnected(self) -> List[str]:
+		if self.__isServer:
+			return list(self.__clients.keys())
+		else:
+			log.warning("Clients should not call getConnected().")
+			raise PiNetError("Invalid operation for clients.")
+
+	""" Called by a method dispatching a request to obtain a responseKey so that
+		any data returned in a response may be obtained after with getResponse().
+
+	Raises PiNetError "Fatal, maximum number of pending responses exceeded." when
+		there are 256 responses already registered and waiting collection.
+		Intentionally left uncaught as under correct implementation and normal
+		operation should never occur.
+	"""
+	def __registerResponse(self) -> int:
+		if len(self.__responses) == 256:
+			log.critical("Fatal, maximum number of pending responses exceeded.")
+			raise PiNetError("Fatal, maximum number of pending responses exceeded.")
+		key = random.randint(0, 255)
+		while key in self.__responses:
+			key = random.randint(0, 255)
+		self.__responses[key] = ""
+		return key
+
+	""" Creates a JSON string of all NetData objects registered with the PiNet
+		instance to satisfy a 'total_data' request made by a peer.
+	"""
+	def __makeTotalNetDataPayload(self) -> str:
+		total_data = {}
+		for var in self.__dataObjs:
+			total_data[var.name] = var.value
+		payload = {"total_data": total_data}
+		return payload
+
+	""" Called asynchronously to send messages to a specified peer.
+
+	peer - The connection-specification dictionary of the peer the message should
+		be sent to.
+	payload - A string containing the message to be sent.
+	"""
+	def __send(self, peer, payload: str) -> None:
+		try:
+			peer["conn"].sendall(payload.encode())
+		except:
+			peer["isRunning"] = False
+			peer["conn"].close()
+			peer["thread"].join()
+			if self.__isServer:
+				for host, client in self.__clients.items():
+					if client == peer:
+						log.error("Failed to send message to client at {0}, " \
+							"closing socket.".format(peer["host"]))
+						self.__clients.pop(host)
+						break
+			else:
+				log.error("Failed to send message to server at {0}, " \
+					"closing socket.".format(self.__address))
+				self.__conn["thread"] = None
 
 	""" Called asynchronously in server instances to constantly listen for remote
 	clients attempting to connect.
@@ -240,220 +428,3 @@ class PiNet:
 					return ""
 			else:
 				request = request + data.decode()
-
-	""" Called asynchronously to send messages to a specified peer.
-
-	peer - The connection-specification dictionary of the peer the message should
-		be sent to.
-	payload - A string containing the message to be sent.
-	"""
-	def __send(self, peer, payload: str) -> None:
-		try:
-			peer["conn"].sendall(payload.encode())
-		except:
-			peer["isRunning"] = False
-			peer["conn"].close()
-			peer["thread"].join()
-			if self.__isServer:
-				for host, client in self.__clients.items():
-					if client == peer:
-						log.error("Failed to send message to client at {0}, " \
-							"closing socket.".format(peer["host"]))
-						self.__clients.pop(host)
-						break
-			else:
-				log.error("Failed to send message to server at {0}, " \
-					"closing socket.".format(self.__address))
-				self.__conn["thread"] = None
-
-	""" Creates a JSON string of all NetData objects registered with the PiNet
-		instance to satisfy a 'total_data' request made by a peer.
-	"""
-	def __makeTotalNetDataPayload(self) -> str:
-		total_data = {}
-		for var in self.__dataObjs:
-			total_data[var.name] = var.value
-		payload = {"total_data": total_data}
-		return payload
-
-	""" Makes a 'data_request' to a peer (who must be specified if called
-		by a server instance). Returns an responseKey integer to retrieve the
-		JSON returned by the peer with getResponse().
-
-	names - A list of NetData names to be requested of the peer. If only
-		'total_data', a response containing all of the NetData values maintained by
-		the peer will be sent as obtained from ____makeTotalNetDataPayload().
-	target - If the caller is a server, it is necessary to specify which client
-		the outgoing request is to be sent to. An exception will be raised if target
-		is its default value in this case.
-
-	Raises PiNetError 'Parameter names must be a non-empty string.' when called
-		with an empty names argument.
-	Raises PiNetError 'Target not specified for the request' when the target
-		parameter is not given when called by a server instance of PiNet.
-	Raises PiNetError 'Specified target is not available.' when the client peer
-		targeted by the operation is not connected.
-	"""
-	def poseQuery(self, names: List[str], target="") -> int:
-		if len(name) == 0:
-			raise PiNetError("Parameter names must be a non-empty string.")
-			log.error("poseQuery() - Parameter names must be a non-empty string")
-		requestKey = self.__registerResponse()
-		query = {"requestKey": requestKey, "query": names}
-		requestPayload = json.dumps(query, separators=(',', ':'))
-		if self.__isServer:
-			target = str(target)
-			if target != "":
-				if target in self.__clients and self.__clients[target]["isRunning"]:
-					st = threading.Thread(target=self.__send, 
-						args=(self.__clients[target], requestPayload))
-					st.start()
-				else:
-					log.error("Specified target is not available.")
-					raise PiNetError("Specified target is not available.")
-			else:
-				log.error("Target not specified for the request.")
-				raise PiNetError("Target not specified for the request.")
-		else:
-			st = threading.Thread(target=self.__send, 
-				args=(self.__conn, requestPayload))
-			st.start()
-		return requestKey
-
-	""" Sends a message to a peer. Unlike poseQuery(), a response from the peer is
-		not expected.
-
-	msg = A string containing the message to be sent.
-	target - If the caller is a server, it is necessary to specify which client
-		the outgoing message is to be sent to. An exception will be raised if target
-		is its default value in this case.
-	desc - An optional string identifier for the recipient to differentiate
-		messages of different purposes with.
-
-	Raises PiNetError 'Target not specified for the message' when the target
-		parameter is not given when called by a server instance of PiNet.
-	Raises PiNetError 'Specified target is not available.' when the client peer
-		targeted by the operation is not connected.
-	"""
-	def sendMsg(self, msg:str, desc="", target="") -> None:
-		msgPayload = {"msg": msg, "type": desc}
-		msgPayload = json.dumps(msgPayload , separators=(',', ':'))
-		if self.__isServer:
-			target = str(target)
-			if target != "":
-				if target in self.__clients and self.__clients[target]["isRunning"]:
-					st = threading.Thread(target=self.__send, 
-						args=(self.__clients[target], msgPayload))
-					st.start()
-				else:
-					log.error("Specified target is not available.")
-					raise PiNetError("Specified target is not available.")
-			else:
-				log.error("Target not specified for the message.")
-				raise PiNetError("Target not specified for the message.")
-		else:
-			st = threading.Thread(target=self.__send, args=(self.__conn, msgPayload))
-			st.start()
-
-	""" Returns the most recent message received by a peer as a dictionary of
-		strings.
-	"""
-	def getMsg(self) -> Dict[str, str]:
-		if len(self.__messages) > 0:
-			return self.__messages.pop(0)
-
-	""" Returns a list of all pending messages received by peers as dictionaries
-		of strings.
-	"""
-	def getMsgs(self) -> List[Dict[str, str]]:
-		msgs = self.__messages.copy()
-		self.__messages.clear()
-		return msgs
-
-	""" Called by a method dispatching a request to obtain a responseKey so that
-		any data returned in a response may be obtained after with getResponse().
-
-	Raises PiNetError "Fatal, maximum number of pending responses exceeded." when
-		there are 256 responses already registered and waiting collection.
-		Intentionally left uncaught as under correct implementation and normal
-		operation should never occur.
-	"""
-	def __registerResponse(self) -> int:
-		if len(self.__responses) == 256:
-			log.critical("Fatal, maximum number of pending responses exceeded.")
-			raise PiNetError("Fatal, maximum number of pending responses exceeded.")
-		key = random.randint(0, 255)
-		while key in self.__responses:
-			key = random.randint(0, 255)
-		self.__responses[key] = ""
-		return key
-
-	""" Called by a thread after dispatching a request to a peer to obtain
-		the returned JSON response. 
-
-	key - The responseKey integer returned by the request dispatching function.
-	"""
-	def getResponse(self, key: int) -> Union[dict, None]:
-		if key in self.__responses and self.__responses[key] != None:
-			return self.__responses.pop(key)
-		else:
-			return None
-		
-	""" Returns a dictionary containing all pending responseKey response value
-		pairs, flushing the internal storage.
-	"""
-	def getResponses(self) -> dict:
-		responses = {i:r for (i,r) in self.__responses.items() if r != None}
-		self.__responses = {i:r for (i,r) in self.__responses.items() if r == None}
-		return responses
-
-	""" Correctly terminates a connection with peers as soon as possible
-		and kills all open threads.
-	"""
-	def stop(self) -> None:
-		if self.__conn["isRunning"]:
-			closePayload = json.dumps("closing", separators=(',', ':')).encode()
-			self.__conn["isRunning"] = False
-			self.__conn["thread"].join()
-			if self.__isServer:
-				log.info("Closing client listener at {0}.".format(self.__address))
-				for host, client in self.__clients.items():
-					client["isRunning"] = False
-					client["thread"].join()
-					try:
-						client["conn"].sendall(closePayload)
-					except:
-						pass
-					finally:
-						time.sleep(NETWORK_TIMEOUT)
-					client["conn"].close()
-					log.info("Closing client connection at {0}.".format(client["host"]))
-			else:
-				log.info("Closing server connection at {0}.".format(self.__address))
-				try:
-					self.__conn["conn"].sendall(closePayload)
-				except:
-					pass
-				finally:
-					time.sleep(NETWORK_TIMEOUT)
-			self.__conn["conn"].close()
-			self.__responses = {}
-			self.__messages	= []
-
-	""" Returns a list of all the connected client's host names. The names are
-		used to target peers when performing operations as a server instance.
-		Peers reflected in this list are available to data transmission or
-		reception.
-
-	Raises PiNetError "Invalid operation for clients." when called from a client
-		instance.
-	"""
-	def getConnected(self) -> List[str]:
-		if self.__isServer:
-			return list(self.__clients.keys())
-		else:
-			log.warning("Clients should not call getConnected().")
-			raise PiNetError("Invalid operation for clients.")
-
-
-
