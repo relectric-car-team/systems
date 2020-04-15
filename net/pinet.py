@@ -11,8 +11,6 @@ from pineterror import PiNetError
 
 # Constants
 NETWORK_TIMEOUT = 0.1
-USB_BAUD = 19200 # 2.4kb/s
-USB_TIMEOUT = NETWORK_TIMEOUT
 
 """ Encapsulates data to facilitate ownership by local software and usage for
 	data requests by peers in the PiNet and ArduinoNet classes.

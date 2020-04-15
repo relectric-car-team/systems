@@ -8,6 +8,10 @@ from arduinoneterror import ArduinoNetError
 # Additional Imports
 import serial # pip install pyserial
 
+# Constants
+USB_BAUD = 19200 # 2.4kb/s
+USB_TIMEOUT = 0.1
+
 
 """ ArduinoNet is an asynchronous serial connection wrapper intended for
 	communication with Arduino micro controllers over USB. It is important to note
