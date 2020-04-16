@@ -1,3 +1,3 @@
-from net import PiNet
-from net import ArduinoNet
-from net import PiNet
+from pinet import PiNet
+from arduinonet import ArduinoNet
+from netdata import NetData
