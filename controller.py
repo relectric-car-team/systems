@@ -19,7 +19,7 @@ class Controller(ABC):
       value - The default value of the variable
       access - The read/write access associated with this variable
   """
-  def registerVariable(self, name: str, value: any, access: VariableAccess) -> None:
+  def registerVariable(self, name: str, value: any, access: Optional[VariableAccess] = VariableAccess.READWRITE) -> None:
     if name in self.variables:
       raise Exception("Cannot register two variables with the same name '", name, "' in: ", type(self).__name__)
     
@@ -40,6 +40,20 @@ class Controller(ABC):
         raise Exception("Variable '", name, "' is readonly, cannot write to it")
 
     self.variables[name].value = value
+  
+  """ Returns whether the controller has registered a variable with given name
+
+      name - Name to check for
+  """
+  def hasVariable(self, name: str) -> bool:
+    return name in self.variables
+  
+  """ Returns whether the controller has registered an action with given name
+
+      name - Name to check for
+  """
+  def hasAction(self, name: str) -> bool:
+    return name in self.actions
   
   """ Returns the value of a variable
 
