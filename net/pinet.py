@@ -2,8 +2,8 @@
 import socket, threading, json, random, time, logging as log
 from typing import Union, List, Dict
 
-from pineterror import PiNetError
-from netdata import NetData
+from .pineterror import PiNetError
+from .netdata import NetData
 
 # Constants
 NETWORK_TIMEOUT = 0.1
@@ -16,7 +16,7 @@ NETWORK_TIMEOUT = 0.1
 	to that of the dispatching main program, preventing lockups and allowing time
 	critical execution to continue unaffected.
 """
-class PiNet:
+class PiNet():
 	""" Constructs a new instance of PiNet.
 
 	isServer - A boolean value indicating if the new PiNet object is to be a
