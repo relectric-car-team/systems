@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Callable
 from controllerdata import ControllerData, VariableAccess
 from abc import ABC
 
@@ -76,7 +76,7 @@ class Controller(ABC):
       name - Name of the action
       callback - Callback function for when the action is called
   """
-  def registerAction(self, name: str, callback: any) -> None:
+  def registerAction(self, name: str, callback: Callable) -> None:
     if not name in self.actions:
       raise Exception("Cannot register two actions with the same name '", name, "' in: ", type(self).__name__)
     
