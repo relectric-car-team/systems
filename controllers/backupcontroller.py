@@ -1,5 +1,5 @@
-from TestData import*
-from Controller import*
+from testdata import*
+from controller import*
 class BackupController(Controller):
     def __init__(self):
         self.testData = TestData()

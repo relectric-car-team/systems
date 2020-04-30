@@ -1,6 +1,6 @@
-from TestData import*
+from testdata import*
 from canBus import*
-from Controller import*
+from controller import*
 class BatteryController(Controller):
     def __init__(self):
         self.testData = TestData()

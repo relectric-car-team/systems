@@ -1,6 +1,6 @@
 from testdata import*
 from canBus import*
-from Controller import*
+from controller import*
 import sys
 class MotorController(Controller):
     def __init__(self):
