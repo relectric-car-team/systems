@@ -16,5 +16,4 @@ class ClimateController(Controller):
     def update(self):     #updates the climatecontroller to the current data
         pass
     def Idle(self):       #updates the controller when the car is in idle
-      pass
         pass
