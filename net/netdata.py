@@ -7,7 +7,7 @@ As Python python does not have C/C++ style pointers, it is necessary to pass
 	provided to instances of PiNet or ArduinoNet with the RegisterNetDataObj()
 	methods.
 """
-class NetData():
+class NetData:
 	""" Constructs and instance of the NetData class.
 
 	name - A string representing the data housed by the object. Peers will

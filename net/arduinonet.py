@@ -3,7 +3,7 @@ import threading
 import logging as log
 from typing import Union
 
-from .arduinoneterror import ArduinoNetError
+from arduinoneterror import ArduinoNetError
 
 # Additional Imports
 import serial # pip install pyserial
