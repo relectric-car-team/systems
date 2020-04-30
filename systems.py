@@ -2,35 +2,59 @@ from typing import Tuple
 from controller import *
 from controllerdata import *
 from controllers import *
+from net import *
 
 class Systems():
   
+  """ Creates and initializes all of the controllers
+  """
   def __init__(self):
-    self.controllers = [];
-    controllers[0] = MotorController
-    controllers[1] = BatteryController
-    controllers[2] = ClimateController
-    controllers[3] = SensorController
-    controllers[4] = BackupController
+    self.controllers = []
+    self.networkManager = NetworkManager()
+    self.controllers.append(MotorController(self.networkManager))
+    self.controllers.append(BatteryController(self.networkManager))
+    self.controllers.append(ClimateController(self.networkManager))
+    self.controllers.append(SensorController(self.networkManager))
+    self.controllers.append(BackupController(self.networkManager))
 
-  def get(name: str) -> any:
-    for i in controllers:
-      if name in controllers[i].variables:
-        return controllers[i].variables[name].value
-    return null
-
-  def set(name: str, value: any) -> None:
-    for i in controllers:
-      if name in controllers[i].variables:
-        controllers[i].variables[name].value = value  
-
-  def sendAction(name: str, args: Tuple[any]) -> None:
-    for i in controllers:
-      if name in controllers[i].actions:
-        controllers[i].performAction(controllers[i], name, args)
-        
-
-  def shutdown(self) -> None:
-    for i in controllers:
-      controllers[i].shutdown()
+  """ Finds and returns the value of the specified variable in a certain controller
   
+      name - Name of the variable
+  """
+  def get(name: str) -> any:
+    for i in self.controllers:
+      if name in self.controllers[i].variables:
+        value = self.controllers[i].getVariable(self.controllers[i], name)
+        return value
+    return None
+
+  """ Finds and sets the value of the specified variable in a certain controller
+  
+      name - Name of the variable
+      value - New value for the specified variable
+  """
+  def set(name: str, value: any) -> None:
+    for i in self.controllers:
+      if name in self.controllers[i].variables:
+        self.controllers[i].setVariable(name, value) 
+        return
+
+  """ Calls the action specified by a controller with the provided arguments
+  
+      name - Name of the variable
+      args - Tuple of arguments to padd to the function
+  """
+  def sendAction(name: str, args: Tuple[any]) -> None:
+    for i in self.controllers:
+      if name in self.controllers[i].actions:
+        self.controllers[i].performAction(self.controllers[i], name, args)
+        return
+        
+  """ Shuts the controllers down
+  """
+  def shutdown(self) -> None:
+    for i in self.controllers:
+      self.controllers[i].shutdown()
+  
+if __name__ == "__main__":
+  systems = Systems()
