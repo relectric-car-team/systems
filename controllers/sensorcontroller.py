@@ -1,7 +1,7 @@
 from testdata import*
 from controller import*
-class SensorController(Controller, networkManager):
-    def __init__(self):
+class SensorController(Controller):
+    def __init__(self, networkManager):
         super(networkManager)
         self.testData = TestData()
         self.testData.loadData()

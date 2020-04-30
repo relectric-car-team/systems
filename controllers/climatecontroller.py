@@ -1,8 +1,8 @@
 from testdata import*
 from canBus import*
 from controller import*
-class ClimateController(Controller, networkManager):
-    def __init__(self):
+class ClimateController(Controller):
+    def __init__(self, networkManager):
         super(networkManager)
         self.testData = TestData()
         self.testData.loadData()
