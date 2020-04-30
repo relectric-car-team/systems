@@ -2,6 +2,7 @@ from typing import Tuple
 from controller import *
 from controllerdata import *
 from controllers import *
+from net import *
 
 class Systems():
   
@@ -9,11 +10,12 @@ class Systems():
   """
   def __init__(self):
     self.controllers = []
-    self.controllers.append(MotorController())
-    self.controllers.append(BatteryController())
-    self.controllers.append(ClimateController())
-    self.controllers.append(SensorController())
-    self.controllers.append(BackupController())
+    self.networkManager = NetworkManager()
+    self.controllers.append(MotorController(self.networkManager))
+    self.controllers.append(BatteryController(self.networkManager))
+    self.controllers.append(ClimateController(self.networkManager))
+    self.controllers.append(SensorController(self.networkManager))
+    self.controllers.append(BackupController(self.networkManager))
 
   """ Finds and returns the value of the specified variable in a certain controller
   
