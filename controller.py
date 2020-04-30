@@ -9,7 +9,8 @@ It provides a set of base functionality, and some callbacks to be overridden by 
 class Controller(ABC):
   """ Initializes the variables and actions dictionaries for the Controller
   """
-  def __init__(self):
+  def __init__(self, networkManager: Optional[any] = None):
+    self.networkManager = networkManager
     self.variables = {}
     self.actions = {}
 
