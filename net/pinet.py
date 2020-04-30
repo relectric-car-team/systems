@@ -2,8 +2,8 @@
 import socket, threading, json, random, time, logging as log
 from typing import Union, List, Dict
 
-from pineterror import PiNetError
-from netdata import NetData
+from .pineterror import PiNetError
+from .netdata import NetData
 
 # Constants
 NETWORK_TIMEOUT = 0.1
