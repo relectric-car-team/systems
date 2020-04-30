@@ -1,11 +1,13 @@
 from testdata import*
 from canBus import*
 from controller import*
-class ClimateController(Controller):
+class ClimateController(Controller, networkManager):
     def __init__(self):
+        super(networkManager)
         self.testData = TestData()
         self.testData.loadData()
         self.CANBusController = canBus()
+
 
         registerAction("update", update)
         registerAction("shutdown", shutdown)

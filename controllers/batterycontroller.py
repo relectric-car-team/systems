@@ -1,8 +1,9 @@
 from testdata import*
 from canBus import*
 from controller import*
-class BatteryController(Controller):
+class BatteryController(Controller, networkManager):
     def __init__(self):
+        super(networkManager)
         self.testData = TestData()
         self.testData.loadData()
         self.CANBusController = canBus() #uhm not sure what or how to initialize this

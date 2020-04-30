@@ -1,7 +1,8 @@
 from testdata import*
 from controller import*
-class BackupController(Controller):
+class BackupController(Controller, networkManager):
     def __init__(self):
+        super(networkManager)
         self.testData = TestData()
         self.testData.loadData()
 

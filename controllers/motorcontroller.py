@@ -2,8 +2,9 @@ from testdata import*
 from canBus import*
 from controller import*
 import sys
-class MotorController(Controller):
+class MotorController(Controller, networkManager):
     def __init__(self):
+        super(networkManager)
         self.testData = TestData()
         self.CANBusController = canBus()
         self.testData.loadData()
