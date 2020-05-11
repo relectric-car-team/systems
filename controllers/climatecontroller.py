@@ -1,6 +1,7 @@
 from testdata import*
 from canBus import*
 from controller import*
+import threading
 class ClimateController(Controller):
     def __init__(self, networkManager):
         super(networkManager)
@@ -8,14 +9,15 @@ class ClimateController(Controller):
         self.testData.loadData()
         self.CANBusController = canBus()
 
-
-        registerAction("update", update)
         registerAction("shutdown", shutdown)
         registerAction("Idle", Idle)
-      #should the climatecontroller have a temperature variable?
+        t = threading.Thread.__init__(self)
+        t.start()
+
     def shutdown(self):   #shutdowns the climatecontroller
+        t.close()
         sys.exit()
-    def update(self):     #updates the climatecontroller to the current data
-        pass
     def Idle(self):       #updates the controller when the car is in idle
         pass
+    def run(self):
+        self.testData.update()

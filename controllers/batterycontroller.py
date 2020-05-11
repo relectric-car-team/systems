@@ -1,21 +1,26 @@
 from testdata import*
 from canBus import*
 from controller import*
+import threading
 class BatteryController(Controller):
     def __init__(self, networkManager):
         super(networkManager)
         self.testData = TestData()
         self.testData.loadData()
-        self.CANBusController = canBus() #uhm not sure what or how to initialize this
+        self.CANBusController = canBus()
 
         registerAction("shutdown", shutdown)
-        registerAction("update", update)
         registerAction("Idle", Idle)
+        t = threading.Thread.__init__(self)
+        t.start()
 
-     #should the batterycontroller have a voltage variable?
+
      def shutdown(self):   #shutdowns the batterycontroller
+        t.close()
         sys.exit()
-     def update(self):     #updates the batterycontroller to the current data
-        pass
+
      def Idle(self):       #updates the controller when the car is in idle
         pass
+
+    def run(self):
+        self.testData.update()
