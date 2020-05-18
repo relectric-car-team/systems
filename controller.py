@@ -1,6 +1,7 @@
 from typing import Tuple, Optional, Callable
 from controllerdata import ControllerData, VariableAccess
 from abc import ABC
+import threading
 
 """ Controller is an abstract base class that all controller classes should inherit from
 
@@ -13,6 +14,8 @@ class Controller(ABC):
     self.networkManager = networkManager
     self.variables = {}
     self.actions = {}
+    t = threading.Thread.__init__(self)
+    t.start()
 
   """ Registers a new variable for the controller
 
@@ -23,7 +26,7 @@ class Controller(ABC):
   def registerVariable(self, name: str, value: any, access: Optional[VariableAccess] = VariableAccess.READWRITE) -> None:
     if name in self.variables:
       raise Exception("Cannot register two variables with the same name '", name, "' in: ", type(self).__name__)
-    
+
     self.variables[name] = ControllerData(name=name, value=value, access=access)
 
   """ Sets the value of an existing variable
@@ -35,27 +38,27 @@ class Controller(ABC):
   def setVariable(self, name: str, value: any, bypass: Optional[bool] = True) -> None:
     if not name in self.variables:
       raise Exception("Variable '", name, "' does not exist on type ", type(self).__name__)
-    
+
     if not bypass:
       if self.variables[value].access == VariableAccess.READ:
         raise Exception("Variable '", name, "' is readonly, cannot write to it")
 
     self.variables[name].value = value
-  
+
   """ Returns whether the controller has registered a variable with given name
 
       name - Name to check for
   """
   def hasVariable(self, name: str) -> bool:
     return name in self.variables
-  
+
   """ Returns whether the controller has registered an action with given name
 
       name - Name to check for
   """
   def hasAction(self, name: str) -> bool:
     return name in self.actions
-  
+
   """ Returns the value of a variable
 
       name - Name of the variable to look for
@@ -64,11 +67,11 @@ class Controller(ABC):
   def getVariable(self, name: str, bypass: Optional[bool] = False) -> any:
     if not name in self.variables:
       raise Exception("Variable '", name, "' does not exist on type ", type(self).__name__)
-    
+
     if not bypass:
       if self.variables[name].access == VariableAccess.WRITE:
         raise Exception("Variable '", name, "' is writeonly, cannot read from it")
-    
+
     return self.variables[name].value
 
   """ Registers a new action function
@@ -79,12 +82,12 @@ class Controller(ABC):
   def registerAction(self, name: str, callback: Callable) -> None:
     if not name in self.actions:
       raise Exception("Cannot register two actions with the same name '", name, "' in: ", type(self).__name__)
-    
+
     if not callable(callback):
       raise Exception("Registered action must be a function: ", name)
-    
+
     self.actions[name] = callback
-  
+
   """ Performs a given action, with given arguments
 
       name - Name of the action to perform
@@ -93,15 +96,19 @@ class Controller(ABC):
   def performAction(self, name: str, args: Optional[Tuple[any]]) -> None:
     if not name in self.actions:
       raise Exception("Actions with the name does not exist '", name, "' in: ", type(self).__name__)
-    
+
     if not callable(self.actions[name]):
       raise Exception("Registered action must be a function: ", name)
 
     self.actions[name](args=args)
-  
+
   """ Function called on controller shutdown
 
       To be overridden by classes implementing Controller if needed
   """
+  def run(self):
+      while(True):
+          t.sleep()
+
   def shutdown(self) -> None:
     pass

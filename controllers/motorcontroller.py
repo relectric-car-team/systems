@@ -2,7 +2,6 @@ from testdata import*
 from canBus import*
 from controller import*
 import sys
-import threading
 class MotorController(Controller):
     def __init__(self, networkManager):
         super(networkManager)
@@ -16,8 +15,7 @@ class MotorController(Controller):
 
         registerAction("idle", idle)
         registerAction("shutdown", shutdown)
-        t = threading.Thread.__init__(self)
-        t.start()
+
 
     def idle(self):
         setVariable("speed", 0)
@@ -29,8 +27,7 @@ class MotorController(Controller):
         setVariable("RPM", 0)
         setVariable("temperature", 0)
         setVariable("voltage", 0)
-        t.close()
         sys.exit()
 
     def run(self):
-        self.testData.update()
+        pass
