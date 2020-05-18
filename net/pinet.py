@@ -2,8 +2,11 @@
 import socket, threading, json, random, time, logging as log
 from typing import Union, List, Dict
 
-from .pineterror import PiNetError
-from .netdata import NetData
+# Local module imports
+if __name__ == "__main__":
+	from pineterror import PiNetError
+else:
+	from .pineterror import PiNetError
 
 # Constants
 NETWORK_TIMEOUT = 0.1
@@ -35,32 +38,13 @@ class PiNet:
 		self.__address = address
 		self.__isServer = isServer
 		self.__responses = {}
+		self.__requests = []
 		self.__messages = []
-		self.__dataObjs = []
 		self.__conn = {"thread": None, "conn": None, "host": None,
 			"isRunning": False}
 
-	""" Registers a NetData object with the PiNet instance so it may be used to
-		service requests from peers. Can only be called when the connection is not
-		running.
-
-	obj - The NetData object to be registered.
-
-	Raises PiNetError 'Cannot register data objects once the connection is active'
-		when called on an instance with an active connection.
-	"""
-	def registerNetDataObj(self, obj: NetData) -> None:
-		if not self.__conn["isRunning"]:
-			self.__dataObjs.append(obj)
-		else:
-			log.warning("Cannot register data objects once the connection " \
-				"is active.")
-			raise PiNetError("Cannot register data objects once the connection " \
-				"is active.")
-
 	""" Starts the process by which the PiNet instance will seek a network
-		connection with other computers. Note that registerNetDataObj may not be
-		called once the connection is running.
+		connection with other computers.
 
 	Raises PiNetError 'Unable to connect to server.' if a connection with the
 		specified server cannot be established.
@@ -114,31 +98,31 @@ class PiNet:
 		else:
 			self.__address = address
 
-	""" Makes a 'data_request' to a peer (who must be specified if called
-		by a server instance). Returns an responseKey integer to retrieve the
-		JSON returned by the peer with getResponse().
+	""" Sends a request to a peer (who must be specified if called by a server
+		instance). Returns a responseKey integer  to retrieve the JSON payload
+		returned by the peer with getResponse(). The response payload will be a dict
+		with the format {"requestKey": (int), "response": (any)}.
 
-	names - A list of NetData names to be requested of the peer. If only
-		'total_data', a response containing all of the NetData values maintained by
-		the peer will be sent as obtained from ____makeTotalNetDataPayload().
+	request - A dictionary of the format {"type": ["action"|"get"|"set"], "name":
+			["name"], ["args": []], ["value": any]}
 	target - If the caller is a server, it is necessary to specify which client
 		the outgoing request is to be sent to. An exception will be raised if target
 		is its default value in this case.
-
-	Raises PiNetError 'Parameter names must be a non-empty string.' when called
-		with an empty names argument.
+	
+	Raises PiNetError 'Invalid request' if the request does not follow the
+		specified format.
 	Raises PiNetError 'Target not specified for the request' when the target
 		parameter is not given when called by a server instance of PiNet.
 	Raises PiNetError 'Specified target is not available.' when the client peer
 		targeted by the operation is not connected.
 	"""
-	def poseQuery(self, names: List[str], target="") -> int:
-		if len(name) == 0:
-			raise PiNetError("Parameter names must be a non-empty string.")
-			log.error("poseQuery() - Parameter names must be a non-empty string")
+	def sendRequest(self, request: Dict[str, any], target="") -> int:
+		if type(request) != dict or "type" not in request or "name" not in request:
+			log.error("Invalid request.")
+			raise PiNetError("Invalid request.")
 		requestKey = self.__registerResponse()
-		query = {"requestKey": requestKey, "query": names}
-		requestPayload = json.dumps(query, separators=(',', ':'))
+		query = request.update({"requestKey", requestKey})
+		requestPayload = json.dumps(request, separators=(',', ':'))
 		if self.__isServer:
 			target = str(target)
 			if target != "":
@@ -158,23 +142,21 @@ class PiNet:
 			st.start()
 		return requestKey
 
-	""" Sends a message to a peer. Unlike poseQuery(), a response from the peer is
-		not expected.
+	""" Sends a message to a peer. Unlike sendRequest(), a response from the peer
+		is not expected.
 
-	msg = A string containing the message to be sent.
+	msg - A string containing the message to be sent.
 	target - If the caller is a server, it is necessary to specify which client
 		the outgoing message is to be sent to. An exception will be raised if target
 		is its default value in this case.
-	desc - An optional string identifier for the recipient to differentiate
-		messages of different purposes with.
 
 	Raises PiNetError 'Target not specified for the message' when the target
 		parameter is not given when called by a server instance of PiNet.
 	Raises PiNetError 'Specified target is not available.' when the client peer
 		targeted by the operation is not connected.
 	"""
-	def sendMsg(self, msg:str, desc="", target="") -> None:
-		msgPayload = {"msg": msg, "type": desc}
+	def sendMsg(self, msg: str, target="") -> None:
+		msgPayload = {"type": "msg", "msg": msg}
 		msgPayload = json.dumps(msgPayload , separators=(',', ':'))
 		if self.__isServer:
 			target = str(target)
@@ -193,23 +175,24 @@ class PiNet:
 			st = threading.Thread(target=self.__send, args=(self.__conn, msgPayload))
 			st.start()
 
-	""" Returns the most recent message received by a peer as a dictionary of
-		strings.
-	"""
-	def getMsg(self) -> Dict[str, str]:
-		if len(self.__messages) > 0:
-			return self.__messages.pop(0)
+	""" Returns the most recent message received by a peer as a string or all such
+		messages as a list. If there are no messages, None is	returned.
 
-	""" Returns a list of all pending messages received by peers as dictionaries
-		of strings.
+		all - A boolean, when True, returns all messages in a list.
 	"""
-	def getMsgs(self) -> List[Dict[str, str]]:
-		msgs = self.__messages.copy()
-		self.__messages.clear()
-		return msgs
+	def getMsg(self, all=False) -> Union[str, List[str], None]:
+		if len(self.__messages) > 0:
+			if all:
+				msgs = self.__messages.copy()
+				self.__messages.clear()
+				return msgs
+			else:
+				return self.__messages.pop(0)
+		else:
+			return None
 
 	""" Called by a thread after dispatching a request to a peer to obtain
-		the returned JSON response. 
+		the returned JSON response.
 
 	key - The responseKey integer returned by the request dispatching function.
 	"""
@@ -218,6 +201,21 @@ class PiNet:
 			return self.__responses.pop(key)
 		else:
 			return None
+
+	""" Sends a response to a request made by a peer.
+
+		responseKey - The responseKey integer provided with the request.
+		value - The value to be returened as a response to the request.
+		peer - The connection-specific peer identifier provided as a dictionary
+			as part of the request.
+	"""
+	def sendResponse(self, responseKey: int, value: any, peer: dict) -> None:
+		response = {"responseKey": responseKey, "response": value}
+		response["responseKey"] = inPayload["requestKey"]
+		payload = json.dumps(response, separators=(',', ':'))
+		st = threading.Thread(target=self.__send, args=(peer, payload))
+		st.start()
+
 		
 	""" Returns a dictionary containing all pending responseKey response value
 		pairs, flushing the internal storage.
@@ -226,6 +224,11 @@ class PiNet:
 		responses = {i:r for (i,r) in self.__responses.items() if r != None}
 		self.__responses = {i:r for (i,r) in self.__responses.items() if r == None}
 		return responses
+
+	""" Returns the most recent request payload as a dictionary.
+	"""
+	def getRequest(self) -> dict:
+		return self.__requests.pop(0)
 
 	""" Correctly terminates a connection with peers as soon as possible
 		and kills all open threads.
@@ -293,23 +296,13 @@ class PiNet:
 		self.__responses[key] = ""
 		return key
 
-	""" Creates a JSON string of all NetData objects registered with the PiNet
-		instance to satisfy a 'total_data' request made by a peer.
-	"""
-	def __makeTotalNetDataPayload(self) -> str:
-		total_data = {}
-		for var in self.__dataObjs:
-			total_data[var.name] = var.value
-		payload = {"total_data": total_data}
-		return payload
-
 	""" Called asynchronously to send messages to a specified peer.
 
 	peer - The connection-specification dictionary of the peer the message should
 		be sent to.
 	payload - A string containing the message to be sent.
 	"""
-	def __send(self, peer, payload: str) -> None:
+	def __send(self, peer: dict, payload: str) -> None:
 		try:
 			peer["conn"].sendall(payload.encode())
 		except:
@@ -352,14 +345,13 @@ class PiNet:
 	""" Called by an asynchronous thread servicing a connection to receive
 		messaged from its peer and address them accordingly.
 
-	peer - The connection-specification dictionary for the client to be
-		serviced.
+	peer - The connection-specification dictionary for the client to be	serviced.
 	"""
 	def __handleMsg(self, peer: dict) -> None:
-		request = self.__recvMsg(peer)
-		if message == "":
+		inPayload = self.__recvPayload(peer)
+		if inPayload == "":
 			return
-		elif message == "closing":
+		elif inPayload == "closing":
 			if self.__isServer:
 				peer["isRunning"] = False
 				peer["conn"].close()
@@ -369,29 +361,20 @@ class PiNet:
 				log.info("Connection closed by server from {0}".format(self.__address))
 				self.__conn["isRunning"] = False
 			return
-		elif "responseKey" in message:
-			self.__responses[request["responseKey"]] = message
-		elif "msg" in message:
-			self.__messages.append(request)
-		else:
-			response = {}
-			if "query" in message and message["query"][0] == "total_data":
-				response = self.__makeTotalNetDataPayload()
-			elif "query" in message:
-				for i in self.__dataObjs:
-					if i.name in message["query"]:
-						response[i.name] = i.value
-			response["responseKey"] = message["requestKey"]
-			if len(response) > 0:
-				payload = json.dumps(response, separators=(',', ':'))
-				st = threading.Thread(target=self.__send, args=(peer, payload))
-				st.start()
+		elif "responseKey" in inPayload:
+			if responseKey in self.__responses:
+				self.__responses[inPayload["responseKey"]] = inPayload
+		elif "type" in inPayload:
+			if inPayload["type"] == "msg":
+				self.__messages.append(inPayload["msg"])
+			elif inPayload["type"] == "action" or inPayload["type"] == "data":
+				inPayload.update({"peer": peer})
+				self.__requests.append(inpayload)
 
 	""" Called asynchronously in server instances to service a connection opened
 		with a client.
 
-	peer - The connection-specification dictionary for the client to be
-		serviced.
+	peer - The connection-specification dictionary for the client to be serviced.
 	"""
 	def __tendClient(self, peer: dict) -> None:
 		while peer["isRunning"]:
@@ -400,8 +383,7 @@ class PiNet:
 	""" Called asynchronously in client instances to service a connection opened
 		with a server.
 
-	peer - The connection-specification dictionary for the client to be
-		serviced.	
+	peer - The connection-specification dictionary for the client to be	serviced.	
 	"""
 	def __tendServer(self) -> None:
 		while self.__conn["isRunning"]:
@@ -410,10 +392,10 @@ class PiNet:
 	""" Called by an asynchronous thread to receive messages from a specified
 		peer.
 
-	peer - The connection-specification dictionary of the peer the
-		message should be received from.
+	peer - The connection-specification dictionary of the peer the message should 
+		be received from.
 	"""
-	def __recvMsg(self, peer: dict) -> dict:
+	def __recvPayload(self, peer: dict) -> dict:
 		request = ""
 		while True:
 			data = None

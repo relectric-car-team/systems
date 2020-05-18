@@ -26,13 +26,14 @@ class Systems():
     self.controllers.append(ClimateController(self.networkManager))
     self.controllers.append(SensorController(self.networkManager))
     self.controllers.append(BackupController(self.networkManager))
+    self.loop() # Note there is currently no end condition.
 
   """ Finds and returns the value of the specified variable that belongs to one
     of the controllers.
   
       name - A string to identify the variable.
   """
-  def get(name: str) -> any:
+  def getData(self, name: str) -> any:
     for i in self.controllers:
       if name in self.controllers[i].variables:
         return self.controllers[i].getVariable(self.controllers[i], name)
@@ -44,7 +45,7 @@ class Systems():
       name - A string to identify the variable.
       value - New value for the specified variable.
   """
-  def set(name: str, value: any) -> None:
+  def setData(self, name: str, value: any) -> None:
     for i in self.controllers:
       if name in self.controllers[i].variables:
         self.controllers[i].setVariable(name, value) 
@@ -55,12 +56,37 @@ class Systems():
       name - A string to identify the action.
       args - Tuple of arguments to pass to the function.
   """
-  def sendAction(name: str, args: Tuple[any]) -> None:
+  def sendAction(self, name: str, args: Tuple[any]) -> None:
     for i in self.controllers:
       if name in self.controllers[i].actions:
         self.controllers[i].performAction(self.controllers[i], name, args)
         return
         
+  """ The main program loop for the systems computer. Listens for external
+    requests and services them accordingly with the actions of controllers. The
+    format of requests directed to the actions of controllers is a dictionary
+    with the format {"type": ["action"|"get"|"set"], "name": ["name"], 
+    ["args": []], ["value": any]}.
+  """
+  def loop(self):
+    while True:
+      request = self.networkManager.getPiNet().getRequest()
+      if request["type"] == "action":
+        response = sendAction(request["name"], tuple(request["args"]))
+      elif request["type"] == "get":
+        try:
+          response = get(request["name"])
+        except:
+          response = None
+      elif request["type"] == "set":
+        try:
+          setData(request["name"], request["value"])
+          response = True
+        except:
+          response = False
+      self.networkManager.getPiNet().sendResponse(request["requestKey"],
+        response, request["peer"])
+
   """ Shuts the controllers down.
   """
   def shutdown(self) -> None:

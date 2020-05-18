@@ -1,7 +1,7 @@
 # Imports
 from typing import List
 
-from net import PiNet, ArduinoNet
+from net import PiNet, ArduinoNet, CANBusNet
 
 """ NetworkManager takes ownership of all networking library objects so that
 	instances of controller classes may use them. Passing this class down to the
@@ -22,6 +22,7 @@ class NetworkManager():
 		self.__arduinonets = []
 		for i in serial_ports:
 			self.__arduinonets.append(ArduinoNet(i))
+		self.__canbusnet = CANBusNet()
 
 	""" Returns the active PiNet instance.
 	"""
@@ -37,9 +38,8 @@ class NetworkManager():
 
 	""" Returns the active CANBusNet instance.
 	"""
-	# ==== The following is commented until a template of CANBusNet can be made.
-	#def getCANBusNet(self) -> CANBusNet:
-	#	pass
+	def getCANBusNet(self) -> CANBusNet:
+		return self.__canbusnet
 
 	""" Safely closes all network interfaces.
 	"""
