@@ -19,21 +19,21 @@ class Systems():
   """ Creates and initializes the network manager and all of the controllers.
   """
   def __init__(self):
-    self.controllers = []
-    self.networkManager = NetworkManager([])
-    self.controllers.append(MotorController(self.networkManager))
-    self.controllers.append(BatteryController(self.networkManager))
-    self.controllers.append(ClimateController(self.networkManager))
-    self.controllers.append(SensorController(self.networkManager))
-    self.controllers.append(BackupController(self.networkManager))
-    self.loop() # Note there is currently no end condition.
+    self.__controllers = []
+    self.__networkManager = NetworkManager([])
+    self.__controllers.append(MotorController(self.networkManager))
+    self.__controllers.append(BatteryController(self.networkManager))
+    self.__controllers.append(ClimateController(self.networkManager))
+    self.__controllers.append(SensorController(self.networkManager))
+    self.__controllers.append(BackupController(self.networkManager))
+    self.__loop() # Note there is currently no end condition.
 
   """ Finds and returns the value of the specified variable that belongs to one
     of the controllers.
   
       name - A string to identify the variable.
   """
-  def getData(self, name: str) -> any:
+  def __getData(self, name: str) -> any:
     for i in self.controllers:
       if name in self.controllers[i].variables:
         return self.controllers[i].getVariable(self.controllers[i], name)
@@ -45,7 +45,7 @@ class Systems():
       name - A string to identify the variable.
       value - New value for the specified variable.
   """
-  def setData(self, name: str, value: any) -> None:
+  def __setData(self, name: str, value: any) -> None:
     for i in self.controllers:
       if name in self.controllers[i].variables:
         self.controllers[i].setVariable(name, value) 
@@ -56,7 +56,7 @@ class Systems():
       name - A string to identify the action.
       args - Tuple of arguments to pass to the function.
   """
-  def sendAction(self, name: str, args: Tuple[any]) -> None:
+  def __sendAction(self, name: str, args: Tuple[any]) -> None:
     for i in self.controllers:
       if name in self.controllers[i].actions:
         self.controllers[i].performAction(self.controllers[i], name, args)
@@ -68,7 +68,7 @@ class Systems():
     with the format {"type": ["action"|"get"|"set"], "name": ["name"], 
     ["args": []], ["value": any]}.
   """
-  def loop(self):
+  def __loop(self):
     while True:
       request = self.networkManager.getPiNet().getRequest()
       if request["type"] == "action":
