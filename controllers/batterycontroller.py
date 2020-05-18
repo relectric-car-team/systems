@@ -1,21 +1,33 @@
-from testdata import*
-from canBus import*
-from controller import*
+from test import *
+from net import *
+from controller import *
+
+""" The BatteryController class interfaces with the batery control module to
+	manage charge and discharge activities, as well as providing the driver with
+	related feedback on the charge level and expcected range.
+"""
 class BatteryController(Controller):
-    def __init__(self, networkManager):
-        super(networkManager)
-        self.testData = TestData()
-        self.testData.loadData()
-        self.CANBusController = canBus() #uhm not sure what or how to initialize this
+	""" Initializes the BatteryController class by registering actions and
+		variables.
+	"""
+	def __init__(self, networkManager):
+		super().__init__(networkManager)
+		self.testData = TestData()
+		self.testData.loadData()
+		self.CANBusController = CANBusNet() # TODO Complete initialization ASAP
+		#should the batterycontroller have a voltage variable?
+	
+	""" Safely terminates the BatteryConrtoller instance.
+	"""
+	def shutdown(self):
+		sys.exit()
 
-        registerAction("shutdown", shutdown)
-        registerAction("update", update)
-        registerAction("Idle", Idle)
+	""" Updates the batterycontroller to the current data.
+	"""
+	def update(self):
+		pass
 
-     #should the batterycontroller have a voltage variable?
-     def shutdown(self):   #shutdowns the batterycontroller
-        sys.exit()
-     def update(self):     #updates the batterycontroller to the current data
-        pass
-     def Idle(self):       #updates the controller when the car is in idle
-        pass
+	""" Updates the controller when the car is in idle.
+	"""
+	def idle(self):
+		pass

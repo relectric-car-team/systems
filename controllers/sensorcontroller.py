@@ -1,18 +1,27 @@
-from testdata import*
-from controller import*
+from test import *
+from controller import *
+
+""" 
+"""
 class SensorController(Controller):
-    def __init__(self, networkManager):
-        super(networkManager)
-        self.testData = TestData()
-        self.testData.loadData()
+	""" 
+	"""
+	def __init__(self, networkManager):
+		super().__init__(networkManager)
+		self.testData = TestData()
+		self.testData.loadData()
 
-        registerAction("update", update)
-        registerAction("shutdown", shutdown)
-        registerAction("Idle", Idle)
+	""" Safely terminates the SensorController instance.
+	"""
+	def shutdown(self):
+		sys.exit()
 
-    def shutdown(self):   #shutdowns the SensorController
-        sys.exit()
-    def update(self):     #updates the SensorController to the current data
-        pass
-    def Idle(self):       #updates the controller when the car is in idle
-        pass
+	""" Updates the SensorController to the current data.
+	"""
+	def update(self):
+		pass
+
+	""" Updates the controller when the car is in idle.
+	"""
+	def idle(self):
+		pass

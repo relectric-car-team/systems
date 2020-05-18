@@ -1,6 +1,7 @@
 from typing import Tuple, Optional, Callable
 from controllerdata import ControllerData, VariableAccess
 from abc import ABC
+from networkmanager import NetworkManager
 
 """ Controller is an abstract base class that all controller classes should inherit from
 
@@ -9,7 +10,7 @@ It provides a set of base functionality, and some callbacks to be overridden by 
 class Controller(ABC):
   """ Initializes the variables and actions dictionaries for the Controller
   """
-  def __init__(self, networkManager: Optional[any] = None):
+  def __init__(self, networkManager: NetworkManager):
     self.networkManager = networkManager
     self.variables = {}
     self.actions = {}
