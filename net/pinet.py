@@ -225,10 +225,14 @@ class PiNet:
 		self.__responses = {i:r for (i,r) in self.__responses.items() if r == None}
 		return responses
 
-	""" Returns the most recent request payload as a dictionary.
+	""" Returns the most recent request payload as a dictionary. If no requests
+		exist then None is returned.
 	"""
 	def getRequest(self) -> dict:
-		return self.__requests.pop(0)
+		try:
+			return self.__requests.pop(0)
+		except:
+			return None
 
 	""" Correctly terminates a connection with peers as soon as possible
 		and kills all open threads.

@@ -21,11 +21,11 @@ class Systems():
   def __init__(self):
     self.__controllers = []
     self.__networkManager = NetworkManager([])
-    self.__controllers.append(MotorController(self.networkManager))
-    self.__controllers.append(BatteryController(self.networkManager))
-    self.__controllers.append(ClimateController(self.networkManager))
-    self.__controllers.append(SensorController(self.networkManager))
-    self.__controllers.append(BackupController(self.networkManager))
+    self.__controllers.append(MotorController(self.__networkManager))
+    self.__controllers.append(BatteryController(self.__networkManager))
+    self.__controllers.append(ClimateController(self.__networkManager))
+    self.__controllers.append(SensorController(self.__networkManager))
+    self.__controllers.append(BackupController(self.__networkManager))
     self.__loop() # Note there is currently no end condition.
 
   """ Finds and returns the value of the specified variable that belongs to one
@@ -70,22 +70,23 @@ class Systems():
   """
   def __loop(self):
     while True:
-      request = self.networkManager.getPiNet().getRequest()
-      if request["type"] == "action":
-        response = sendAction(request["name"], tuple(request["args"]))
-      elif request["type"] == "get":
-        try:
-          response = get(request["name"])
-        except:
-          response = None
-      elif request["type"] == "set":
-        try:
-          setData(request["name"], request["value"])
-          response = True
-        except:
-          response = False
-      self.networkManager.getPiNet().sendResponse(request["requestKey"],
-        response, request["peer"])
+      request = self.__networkManager.getPiNet().getRequest()
+      if request != None:
+        if request["type"] == "action":
+          response = sendAction(request["name"], tuple(request["args"]))
+        elif request["type"] == "get":
+          try:
+            response = get(request["name"])
+          except:
+            response = None
+        elif request["type"] == "set":
+          try:
+            setData(request["name"], request["value"])
+            response = True
+          except:
+            response = False
+        self.__networkManager.getPiNet().sendResponse(request["requestKey"],
+          response, request["peer"])
 
   """ Shuts the controllers down.
   """
