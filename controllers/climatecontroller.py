@@ -3,8 +3,8 @@ from net import *
 from controller import *
 
 """ The ClimateController class interfaces with cabin heating and cooling
-	systems, performing the necessary consideration to attain the climate settings
-	desired by the occupants of the vehicle.
+	systems, performing the necessary consideration to attain the climate
+	settings desired by the occupants of the vehicle.
 """
 class ClimateController(Controller):
 	""" Initializes the ClimateController class by registering actions and
@@ -15,7 +15,7 @@ class ClimateController(Controller):
 		self.testData = TestData()
 		self.testData.loadData()
 		self.CANBusController = CANBusNet() # TODO Complete initialization ASAP
-		#should the ClimateController have a temperature variable?
+		# Should the ClimateController have a temperature variable?
 		
 	""" Safely terminates the ClimateController instance.
 	"""

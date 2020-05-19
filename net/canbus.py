@@ -1,4 +1,8 @@
-from .canbusneterror import CANBusNetError
+# Local module imports
+if __name__ == "__main__":
+	from canbusneterror import CANBusNetError
+else:
+	from .canbusneterror import CANBusNetError
 
 """ Placeholder CANBus interface class.
 """

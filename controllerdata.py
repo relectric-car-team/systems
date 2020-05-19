@@ -12,8 +12,8 @@ class VariableAccess(Enum):
 	controllers and Systems.
 """
 class ControllerData():
-	""" Initializes the ControllerData object with the variable's name, a default
-		value, and the access state.
+	""" Initializes the ControllerData object with the variable's name, a
+	default	value, and the access state.
 	"""
 	def __init__(self, name=None, value=None, access=VariableAccess.READ):
 		self.name = name

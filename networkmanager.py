@@ -11,11 +11,11 @@ from net import PiNet, ArduinoNet, CANBusNet
 class NetworkManager():
 	""" Initializes NetworkManager and creates and starts all of the network
 		interfaces.
-		serial_ports - A list containing the platform identifiers (strings) for the
-			serial ports to be bound. The index of the identifier is the same as the
-			integer used to retrieve a the respective ArduinoNet instance with
-			getArduinoNet(). Example identifiers include 'COM3' for Windows and
-			'/dev/ttyUSB0' for GNU/Linux.
+		serial_ports - A list containing the platform identifiers (strings) for
+		the	serial ports to be bound. The index of the identifier is the same as
+		the	integer used to retrieve a the respective ArduinoNet instance with
+		getArduinoNet(). Example identifiers include 'COM3' for Windows and
+		'/dev/ttyUSB0' for GNU/Linux.
 	"""
 	def __init__(self, serial_ports: List[str]) -> None:
 		self.__pinet = PiNet(True, ("localhost", 4000)) # Assuming we use this port
@@ -30,8 +30,8 @@ class NetworkManager():
 		return self.__pinet
 
 	""" Returns the active ArduinoNet instance.
-	port - An integer specifying the serial port tied to the ArduinoNet instance
-		being requested. See __init__().
+		port - An integer specifying the serial port tied to the ArduinoNet
+		instance being requested. See __init__().
 	"""
 	def getArduinoNet(self, port: int) -> ArduinoNet:
 		return self.__arduinonet

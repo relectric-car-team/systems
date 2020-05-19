@@ -1,4 +1,5 @@
 from test import *
+from net import *
 from controller import *
 
 """ The BackupController class interfaces with the rear sensor hardware

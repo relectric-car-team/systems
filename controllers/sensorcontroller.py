@@ -1,6 +1,7 @@
 from test import *
+from net import *
 from controller import *
-
+	
 """ The SensorController class communicates with sensors throughout the vehicle
 	to inform the operation of its systems and keep the driver updated on the
 	car's condition.

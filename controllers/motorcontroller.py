@@ -1,7 +1,6 @@
 from test import *
 from net import *
 from controller import *
-import sys
 
 """ The MotorController class interfaces with the motor drive to obtain
 	telemetry.
@@ -16,10 +15,10 @@ class MotorController(Controller):
 		self.CANBusController = CANBusNet() # TODO Complete initialization ASAP
 		self.testData.loadData()
 		#self.testData.update()
-		self.registerVariable("speed", 0, VariableAccess.READWRITE)
-		self.registerVariable("voltage", 0, VariableAccess.READWRITE)
-		self.registerVariable("temperature", 0, VariableAccess.READWRITE)
-		self.registerVariable("RPM", 0, VariableAccess.READWRITE)
+		self.__registerVariable("speed", 0, VariableAccess.READWRITE)
+		self.__registerVariable("voltage", 0, VariableAccess.READWRITE)
+		self.__registerVariable("temperature", 0, VariableAccess.READWRITE)
+		self.__registerVariable("RPM", 0, VariableAccess.READWRITE)
 
 	""" Updates the controller when the car is in idle.
 	"""
