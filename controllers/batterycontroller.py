@@ -19,4 +19,4 @@ class BatteryController(Controller):
         pass
 
     def run(self):
-        pass
+        time.sleep(1)

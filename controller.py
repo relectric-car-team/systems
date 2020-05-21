@@ -14,8 +14,9 @@ class Controller(ABC):
     self.networkManager = networkManager
     self.variables = {}
     self.actions = {}
-    t = threading.Thread.__init__(self)
-    t.start()
+    self.running = True
+    self.thread = threading.Thread(target = self.run)
+    thread.start()
 
   """ Registers a new variable for the controller
 
@@ -107,8 +108,9 @@ class Controller(ABC):
       To be overridden by classes implementing Controller if needed
   """
   def run(self):
-      while(True):
-          t.sleep()
+      while(self.running):
+          time.sleep(1)
 
   def shutdown(self) -> None:
-    pass
+      self.running = False
+      self.thread.join()

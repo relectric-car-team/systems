@@ -30,4 +30,4 @@ class MotorController(Controller):
         sys.exit()
 
     def run(self):
-        pass
+        time.sleep(1)

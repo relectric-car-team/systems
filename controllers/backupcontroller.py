@@ -15,4 +15,4 @@ class BackupController(Controller):
     def Idle(self):       #updates the controller when the car is in idle
         pass
     def run(self):
-        pass
+        time.sleep(1)
