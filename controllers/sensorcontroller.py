@@ -1,31 +1,28 @@
 from test import *
-from net import *
 from controller import *
-	
-""" The SensorController class communicates with sensors throughout the vehicle
-	to inform the operation of its systems and keep the driver updated on the
-	car's condition.
-"""
+
+
 class SensorController(Controller):
-	""" Initializes the SensorController class by registering actions and
-		variables.
-	"""
-	def __init__(self, networkManager):
-		super().__init__(networkManager)
-		self.testData = TestData()
-		self.testData.loadData()
+    """ The SensorController class communicates with sensors throughout the
+    vehicle to inform the operation of its systems and keep the driver updated
+    on the car's condition.
+    """
 
-	""" Safely terminates the SensorController instance.
-	"""
-	def shutdown(self):
-		sys.exit()
+    def __init__(self, network_manager):
+        """ Initializes the SensorController class by registering actions and
+        variables.
+        """
+        super().__init__(network_manager)
+        self.testData = TestData()
 
-	""" Updates the SensorController to the current data.
-	"""
-	def update(self):
-		pass
+    def shutdown(self):
+        """ Safely terminates the SensorController instance. """
+        pass
 
-	""" Updates the controller when the car is in idle.
-	"""
-	def idle(self):
-		pass
+    def update(self):
+        """ Updates the SensorController to the current data. """
+        pass
+
+    def idle(self):
+        """ Updates the controller when the car is in idle.	"""
+        pass

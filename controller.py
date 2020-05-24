@@ -2,109 +2,120 @@ from typing import Tuple, Optional, Callable
 from controllerdata import ControllerData, VariableAccess
 from abc import ABC
 from networkmanager import NetworkManager
+from controllererror import ControllerError
 
-""" Controller is an abstract base class that all controller classes should
-	inherit from. It provides a set of base functionality, and some callbacks to
-	be overridden by the child class.
-"""
+
 class Controller(ABC):
-	""" Initializes the variables and actions dictionaries for the Controller.
-	"""
-	def __init__(self, networkManager: NetworkManager):
-		self.networkManager = networkManager
-		self.variables = {}
-		self.actions = {}
+    """ Controller is an abstract base class that all controller classes
+    should inherit from. It provides a set of base functionality, and some
+    callbacks to be overridden by the child class.
+    """
 
-	""" Registers a new variable for the controller.
+    def __init__(self, network_manager: NetworkManager):
+        """ Initializes the variables and actions dictionaries for the
+        Controller.
+        """
+        self.networkManager = network_manager
+        self.__variables = {}
+        self.__actions = {}
 
-		name - String identifier of the variable to register.
-		value - The default value of the variable.
-		access - A VariableAccess to assign the access state of the variable.
-	"""
-	def __registerVariable(self, name: str, value: any, 
-		access: VariableAccess = VariableAccess.READWRITE) -> None:
-		if name in self.variables:
-			raise Exception("Cannot register two variables with the same name '", 
-				name, "' in: ", type(self).__name__)
-		self.variables[name] = ControllerData(name=name, value=value, 
-			access=access)
+    def __register_variable(self, name: str, value: any,
+                            access: VariableAccess =
+                            VariableAccess.READWRITE) -> None:
+        """ Registers a new variable for the controller.
 
-	""" Sets the value of an existing variable.
+        name - String identifier of the variable to register.
+        value - The default value of the variable.
+        access - A VariableAccess to assign the access state of the variable.
+        """
+        if name in self.__variables:
+            raise Exception(
+                "Cannot register two variables with the same name '",
+                name, "' in: ", type(self).__name__)
+        self.__variables[name] = ControllerData(name=name, value=value,
+                                                access=access)
 
-		name - String identifier of the variable to change.
-		value - New value for the variable.
-		bypass - If True, bypasses read/write access restrictions.
-	"""
-	def setVariable(self, name: str, value: any, bypass: bool = True) -> None:
-		if not name in self.variables:
-			raise Exception("Variable '", name, "' does not exist on type ", 
-				type(self).__name__)
-		if not bypass:
-			if self.variables[value].access == VariableAccess.READ:
-				raise Exception("Variable '", name,
-				 "' is read-only, cannot write to it")
+    def set_variable(self, name: str, value: any, bypass: bool = True) -> None:
+        """ Sets the value of an existing variable.
 
-		self.variables[name].value = value
-	
-	""" Returns whether the controller has registered a variable with given
-		name.
+        name - String identifier of the variable to change.
+        value - New value for the variable.
+        bypass - If True, bypasses read/write access restrictions.
+        """
+        if name not in self.__variables:
+            raise ControllerError("Variable '", name,
+                                  "' does not exist on type ",
+                                  type(self).__name__)
+        if not bypass:
+            if self.__variables[value].access == VariableAccess.READ:
+                raise ControllerError("Variable '", name,
+                                      "' is read-only, cannot write to it")
+        self.__variables[name].value = value
 
-		name - String identifier for the variable to check for.
-	"""
-	def hasVariable(self, name: str) -> bool:
-		return name in self.variables
-	
-	""" Returns whether the controller has registered an action with given name.
+    def has_variable(self, name: str) -> bool:
+        """ Returns whether the controller has registered a variable with given
+        name.
 
-		name - String identifier for the action to check for.
-	"""
-	def hasAction(self, name: str) -> bool:
-		return name in self.actions
-	
-	""" Returns the value of a variable
+        name - String identifier for the variable to check for.
+        """
+        return name in self.__variables
 
-		name - Name of the variable to look for
-		bypass - Bypass read/write access restrictions
-	"""
-	def getVariable(self, name: str, bypass: Optional[bool] = False) -> any:
-		if not name in self.variables:
-			raise Exception("Variable '", name, "' does not exist on type ",
-				type(self).__name__)
-		if not bypass:
-			if self.variables[name].access == VariableAccess.WRITE:
-				raise Exception("Variable '", name,
-					"' is write-only, cannot read from it")
-		return self.variables[name].value
+    def has_action(self, name: str) -> bool:
+        """ Returns whether the controller has registered an action with
+        given name.
 
-	""" Registers a new action function
+        name - String identifier for the action to check for.
+        """
+        return name in self.__actions
 
-		name - String identifier of the action to register.
-		callback - Callback function for when the action is called.
-	"""
-	def __registerAction(self, name: str, callback: Callable) -> None:
-		if not name in self.actions:
-			raise Exception("Cannot register two actions with the same name '", 
-				name, "' in: ", type(self).__name__)
-		if not callable(callback):
-			raise Exception("Registered action must be a function: ", name)
-		
-		self.actions[name] = callback
-	
-	""" Performs a given action, with given arguments.
+    def get_variable(self, name: str, bypass: bool = False) -> any:
+        """ Returns the value of a variable
 
-		name - String identifier of the action to perform.
-		args - Tuple of arguments to pass to the function.
-	"""
-	def performAction(self, name: str, args: Optional[Tuple[any]]) -> None:
-		if not name in self.actions:
-			raise Exception("Actions with the name does not exist '", name,
-				"' in: ", type(self).__name__)
-		if not callable(self.actions[name]):
-			raise Exception("Registered action must be a function: ", name)
-		self.actions[name](args=args)
-	
-	""" Safely terminates the controller. To be overridden by classes 
-		implementing Controller if needed.
-	"""
-	def shutdown(self) -> None:
-		pass
+        name - Name of the variable to look for
+        bypass - Bypass read/write access restrictions
+        """
+        if name not in self.__variables:
+            raise ControllerError("Variable '", name,
+                                  "' does not exist on type ",
+                                  type(self).__name__)
+        if not bypass:
+            if self.__variables[name].access == VariableAccess.WRITE:
+                raise ControllerError("Variable '", name,
+                                      "' is write-only, cannot read from it")
+        return self.__variables[name].value
+
+    def __register_action(self, name: str, callback: Callable) -> None:
+        """ Registers a new action function
+
+        name - String identifier of the action to register.
+        callback - Callback function for when the action is called.
+        """
+        if name not in self.__actions:
+            raise ControllerError(
+                "Cannot register two actions with the same name '",
+                name, "' in: ", type(self).__name__)
+        if not callable(callback):
+            raise ControllerError("Registered action must be a function: ",
+                                  name)
+        self.__actions[name] = callback
+
+    def perform_action(self, name: str, args: Optional[Tuple[any]]) -> None:
+        """ Performs a given action, with given arguments.
+
+        name - String identifier of the action to perform.
+        args - Tuple of arguments to pass to the function.
+        """
+        if name not in self.__actions:
+            raise ControllerError("Actions with the name does not exist '",
+                                  name,
+                                  "' in: ", type(self).__name__)
+        if not callable(self.__actions[name]):
+            raise ControllerError("Registered action must be a function: ",
+                                  name)
+        self.__actions[name](args=args)
+
+    def shutdown(self) -> None:
+        """ Safely terminates the controller. To be overridden by classes
+        implementing Controller if needed.
+        """
+        pass
