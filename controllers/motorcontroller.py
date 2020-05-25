@@ -16,10 +16,10 @@ class MotorController(Controller):
         self.testData = TestData()
         self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
         # self.testData.update()
-        self.__register_variable("speed", 0, VariableAccess.READWRITE)
-        self.__register_variable("voltage", 0, VariableAccess.READWRITE)
-        self.__register_variable("temperature", 0, VariableAccess.READWRITE)
-        self.__register_variable("RPM", 0, VariableAccess.READWRITE)
+        self._register_variable("speed", 0, VariableAccess.READWRITE)
+        self._register_variable("voltage", 0, VariableAccess.READWRITE)
+        self._register_variable("temperature", 0, VariableAccess.READWRITE)
+        self._register_variable("RPM", 0, VariableAccess.READWRITE)
 
     def idle(self):
         """ Updates the controller when the car is in idle.	"""

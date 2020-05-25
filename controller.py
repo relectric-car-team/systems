@@ -19,7 +19,7 @@ class Controller(ABC):
         self.__variables = {}
         self.__actions = {}
 
-    def __register_variable(self, name: str, value: any,
+    def _register_variable(self, name: str, value: any,
                             access: VariableAccess =
                             VariableAccess.READWRITE) -> None:
         """ Registers a new variable for the controller.
@@ -84,7 +84,7 @@ class Controller(ABC):
                                       "' is write-only, cannot read from it")
         return self.__variables[name].value
 
-    def __register_action(self, name: str, callback: Callable) -> None:
+    def _register_action(self, name: str, callback: Callable) -> None:
         """ Registers a new action function
 
         name - String identifier of the action to register.
