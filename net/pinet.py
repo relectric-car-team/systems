@@ -61,19 +61,22 @@ class PiNet:
                 self.__conn["conn"].bind(self.__address)
                 self.__conn["thread"].start()
                 self.__conn["conn"].listen()
-                log.info("Server listening for clients on {0}.".format(self.__address))
+                log.info("Server listening for clients on "
+                         "{0}.".format(self.__address))
             else:
                 try:
                     self.__conn["conn"] = socket.socket()
                     self.__conn["conn"].connect(self.__address)
-                except:
-                    log.error("Unable to connect to server at {0}.".format(self.__address))
+                except:  # Unable to determine the relevant exception type
+                    log.error("Unable to connect to server at "
+                              "{0}.".format(self.__address))
                     raise PiNetError("Unable to connect to server.")
                 else:
                     self.__conn["isRunning"] = True
                     self.__conn["thread"] = Thread(target=self.__tend_server)
                     self.__conn["thread"].start()
-                    log.info("Client connected to server at {0}.".format(self.__address))
+                    log.info("Client connected to server at "
+                             "{0}.".format(self.__address))
         else:
             log.error("Socket connection already running")
             raise PiNetError("Socket connection already running.")
