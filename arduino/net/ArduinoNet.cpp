@@ -29,12 +29,12 @@ ArduinoNet::ArduinoNet() {
 	ArduinoNet::establishContact();
 }
 
-/* Sends the integer data to the connected computer. The idenfifier key must be an
-	even integer k such that 0 < k <= 65536.
+/* Sends the integer data to the connected computer. The idenfifier key must be
+	an even integer k such that 0 < k <= 65536.
 
-data - The integer value to be sent over the serial connection.
-key - The integer key that identifies the meaning of the value. The key must be
-	and even integer k such that 0 < k <= 65536.
+	data - The integer value to be sent over the serial connection.
+	key - The integer key that identifies the meaning of the value. The key must
+	be and even integer k such that 0 < k <= 65536.
  */
 void ArduinoNet::sendData(int data, int key) {
 	byte * bKey = (byte*) &key;
@@ -46,9 +46,9 @@ void ArduinoNet::sendData(int data, int key) {
 /* Sends the float data to the connected computer. The idenfifier key must be an
 	odd integer k such that 0 < k <= 65536.
 
-data - The float value to be sent over the serial connection.
-key - The integer key that identifies the meaning of the value. The key must be
-	and odd integer k such that 0 < k <= 65536.
+	data - The float value to be sent over the serial connection.
+	key - The integer key that identifies the meaning of the value. The key must
+	be and odd integer k such that 0 < k <= 65536.
  */
 void ArduinoNet::sendData(float data, int key) {
 	byte * bKey = (byte*) &key;

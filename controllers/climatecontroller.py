@@ -1,21 +1,31 @@
-from testdata import*
-from canBus import*
-from controller import*
+from test import *
+from net import *
+from controller import *
+
+
 class ClimateController(Controller):
-    def __init__(self, networkManager):
-        super(networkManager)
+    """ The ClimateController class interfaces with cabin heating and cooling
+    systems, performing the necessary consideration to attain the climate
+    settings desired by the occupants of the vehicle.
+    """
+
+    def __init__(self, network_manager):
+        """ Initializes the ClimateController class by registering actions and
+        variables.
+        """
+        super().__init__(network_manager)
         self.testData = TestData()
-        self.testData.loadData()
-        self.CANBusController = canBus()
+        self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
+        # Should the ClimateController have a temperature variable?
 
-
-        registerAction("update", update)
-        registerAction("shutdown", shutdown)
-        registerAction("Idle", Idle)
-      #should the climatecontroller have a temperature variable?
-    def shutdown(self):   #shutdowns the climatecontroller
-        sys.exit()
-    def update(self):     #updates the climatecontroller to the current data
+    def shutdown(self):
+        """ Safely terminates the ClimateController instance. """
         pass
-    def Idle(self):       #updates the controller when the car is in idle
+
+    def update(self):
+        """ Updates the ClimateController to the current data. """
+        pass
+
+    def idle(self):
+        """ Updates the controller when the car is in idle. """
         pass

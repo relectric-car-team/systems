@@ -1,18 +1,28 @@
-from testdata import*
-from controller import*
+from test import *
+from controller import *
+
+
 class BackupController(Controller):
-    def __init__(self, networkManager):
-        super(networkManager)
+    """ The BackupController class interfaces with the rear sensor hardware
+    controllers to alert the driver if the vehicle is at rick of backing into an
+    obstacle.
+    """
+
+    def __init__(self, network_manager):
+        """ Initializes the BackupController class by registering actions and
+        variables.
+        """
+        super().__init__(network_manager)
         self.testData = TestData()
-        self.testData.loadData()
 
-        registerAction("shutdown", shutdown)
-        registerAction("update", update)
-        registerAction("Idle", Idle)
-
-    def shutdown(self):   #shutdowns the BackupController
-        sys.exit()
-    def update(self):     #updates the controller to the current data
+    def shutdown(self):
+        """ Safely terminates the BackupController instance. """
         pass
-    def Idle(self):       #updates the controller when the car is in idle
+
+    def update(self):
+        """ Updates the controller to the current data.	"""
+        pass
+
+    def idle(self):
+        """ Updates the controller when the car is in idle. """
         pass
