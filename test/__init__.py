@@ -1,1 +1,1 @@
-from testdata import TestData
+from .testdata import TestData
