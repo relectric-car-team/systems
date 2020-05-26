@@ -38,11 +38,11 @@ class Systems:
         """
         for controller in self.__controllers:
             try:
-                log.debug("Getting data variable '{0}'.".format(name))
                 return controller.get_variable(name, False)
             except ControllerError:
-                log.error("Failed to get data variable '{0}'.".format(name))
-                return None
+                pass
+        raise ControllerError("Data variable '{0}' does not "
+                              "exist.".format(name))
 
     def __set_data(self, name: str, value: any) -> None:
         """ Finds and sets the value of the specified variable that belongs
@@ -54,13 +54,13 @@ class Systems:
         for controller in self.__controllers:
             try:
                 controller.set_variable(name, value)
-                log.debug("Set data variable '{0}' with value "
-                          "{1}".format(name, value))
+                break
             except ControllerError:
-                log.error("Failed to set data variable '{0}' with value "
-                          "{1}".format(name, value))
+                pass
+        raise ControllerError("Data variable '{0}' does not "
+                              "exist.".format(name))
 
-    def __send_action(self, name: str, args: Tuple[any]) -> None:
+    def __send_action(self, name: str, args: Tuple[any]) -> any:
         """ Calls the action specified by a controller with the provided
         arguments.
 
@@ -69,12 +69,10 @@ class Systems:
         """
         for controller in self.__controllers:
             try:
-                controller.perform_action(name, args)
-                log.debug("Performed action '{0}' with arguments "
-                          "{1}.".format(name, args))
+                return controller.perform_action(name, args)
             except ControllerError:
-                log.error("Failed to perform action '{0}' with arguments "
-                          "{1}.".format(name, args))
+                pass
+        raise ControllerError("Action '{0}' does not exist.".format(name))
 
     def __loop(self):
         """ The main program loop for the systems computer. Listens for external
@@ -90,7 +88,7 @@ class Systems:
                 response = None
                 if request["type"] == "action":
                     response = self.__send_action(request["name"],
-                                                 tuple(request["args"]))
+                                                  tuple(request["args"]))
                 elif request["type"] == "get":
                     response = self.__get_data(request["name"])
                 elif request["type"] == "set":
@@ -114,9 +112,9 @@ class Systems:
 if __name__ == "__main__":
     log.basicConfig(level=log.DEBUG,
                     format='%(asctime)s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M',
+                    datefmt='%m-%d %H:%M:%S',
                     filename='./logs/systems.log',
-                    filemode='w',)
+                    filemode='w', )
     consoleLog = log.StreamHandler(sys.stdout)
     consoleLog.setLevel(log.INFO)
     consoleFormat = log.Formatter('%(levelname)-8s %(message)s')

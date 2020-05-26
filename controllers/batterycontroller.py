@@ -27,5 +27,6 @@ class BatteryController(Controller):
         """ Updates the BatteryController to the current data. """
         pass
 
-    def run(self):
+    def _run(self):
+        """ Run loop for the controller """
         time.sleep(1)

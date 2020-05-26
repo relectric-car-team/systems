@@ -3,6 +3,7 @@ from net import *
 from controller import *
 import time
 
+
 class ClimateController(Controller):
     """ The ClimateController class interfaces with cabin heating and cooling
     systems, performing the necessary consideration to attain the climate
@@ -26,5 +27,6 @@ class ClimateController(Controller):
         """ Updates the ClimateController to the current data. """
         pass
 
-    def run(self):
+    def _run(self):
+        """ Run loop for the controller """
         time.sleep(1)

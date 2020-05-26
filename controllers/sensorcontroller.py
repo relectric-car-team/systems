@@ -2,6 +2,7 @@ from test import *
 from controller import *
 import time
 
+
 class SensorController(Controller):
     """ The SensorController class communicates with sensors throughout the
     vehicle to inform the operation of its systems and keep the driver updated
@@ -24,5 +25,6 @@ class SensorController(Controller):
         """ Updates the SensorController to the current data. """
         pass
 
-    def run(self):
+    def _run(self):
+        """ Run loop for the controller """
         time.sleep(1)
