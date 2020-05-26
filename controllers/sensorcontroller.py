@@ -1,6 +1,6 @@
 from test import *
 from controller import *
-
+import time
 
 class SensorController(Controller):
     """ The SensorController class communicates with sensors throughout the
@@ -17,12 +17,12 @@ class SensorController(Controller):
 
     def shutdown(self):
         """ Safely terminates the SensorController instance. """
+        super().shutdown()
         pass
 
     def update(self):
         """ Updates the SensorController to the current data. """
         pass
 
-    def idle(self):
-        """ Updates the controller when the car is in idle.	"""
-        pass
+    def run(self):
+        time.sleep(1)

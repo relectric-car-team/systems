@@ -1,6 +1,7 @@
 from test import *
 from net import *
 from controller import *
+import time
 
 
 class BatteryController(Controller):
@@ -20,12 +21,11 @@ class BatteryController(Controller):
 
     def shutdown(self):
         """ Safely terminates the BatteryController instance. """
-        pass
+        super().shutdown()
 
     def update(self):
         """ Updates the BatteryController to the current data. """
         pass
 
-    def idle(self):
-        """ Updates the controller when the car is in idle. """
-        pass
+    def run(self):
+        time.sleep(1)

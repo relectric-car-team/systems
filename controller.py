@@ -4,7 +4,8 @@ from abc import ABC
 from networkmanager import NetworkManager
 from controllererror import ControllerError
 import logging as log
-
+import threading
+import time
 
 class Controller(ABC):
     """ Controller is an abstract base class that all controller classes
@@ -20,6 +21,8 @@ class Controller(ABC):
         self.networkManager = network_manager
         self.__variables = {}
         self.__actions = {}
+        self.__thread = threading.Thread(target=self.run)
+        self.__thread.start()
 
     def _register_variable(self, name: str, value: any,
                            access: VariableAccess =
@@ -107,7 +110,8 @@ class Controller(ABC):
                 "Cannot register two actions with the same name '",
                 name, "' in: ", type(self).__name__)
         if not callable(callback):
-            log.error("Registered action '{0}' must be a function.".format(name))
+            log.error(
+                "Registered action '{0}' must be a function.".format(name))
             raise ControllerError("Registered action must be a function: ",
                                   name)
         self.__actions[name] = callback
@@ -120,14 +124,22 @@ class Controller(ABC):
         args - Tuple of arguments to pass to the function.
         """
         if name not in self.__actions:
-            log.error("Actions with the name '{0}' does not exist.".format(name))
+            log.error(
+                "Actions with the name '{0}' does not exist.".format(name))
             raise ControllerError("Actions with the name does not exist: ",
                                   name,
                                   " in: ", type(self).__name__)
         self.__actions[name](args=args)
 
+    def run(self):
+        while(self.running):
+            time.sleep(1)
+
     def shutdown(self) -> None:
         """ Safely terminates the controller. To be called by super() and
         overridden by classes implementing Controller if needed.
         """
+
         log.info("Shutting down '{0}'.".format(type(self).__name__))
+        self.running = False
+        self.thread.join()

@@ -1,7 +1,7 @@
 from test import *
 from net import *
 from controller import *
-
+import time
 
 class ClimateController(Controller):
     """ The ClimateController class interfaces with cabin heating and cooling
@@ -20,12 +20,11 @@ class ClimateController(Controller):
 
     def shutdown(self):
         """ Safely terminates the ClimateController instance. """
-        pass
+        super().shutdown()
 
     def update(self):
         """ Updates the ClimateController to the current data. """
         pass
 
-    def idle(self):
-        """ Updates the controller when the car is in idle. """
-        pass
+    def run(self):
+        time.sleep(1)
