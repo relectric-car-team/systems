@@ -2,6 +2,7 @@ import logging as log
 from controller import *
 from controllers import *
 from networkmanager import NetworkManager
+import sys
 
 
 class Systems:
@@ -19,8 +20,9 @@ class Systems:
         """ Creates and initializes the network manager and all of the
         controllers.
         """
+        log.info("Initializing systems...")
         self.__controllers = []
-        self.__networkManager = NetworkManager([])
+        self.__networkManager = NetworkManager(("localhost", 4000), [])
         self.__controllers.append(MotorController(self.__networkManager))
         self.__controllers.append(BatteryController(self.__networkManager))
         self.__controllers.append(ClimateController(self.__networkManager))
@@ -36,8 +38,10 @@ class Systems:
         """
         for controller in self.__controllers:
             try:
+                log.debug("Getting data variable '{0}'.".format(name))
                 return controller.get_variable(name, False)
-            except:
+            except ControllerError:
+                log.error("Failed to get data variable '{0}'.".format(name))
                 return None
 
     def __set_data(self, name: str, value: any) -> None:
@@ -50,8 +54,11 @@ class Systems:
         for controller in self.__controllers:
             try:
                 controller.set_variable(name, value)
-            except:
-                pass
+                log.debug("Set data variable '{0}' with value "
+                          "{1}".format(name, value))
+            except ControllerError:
+                log.error("Failed to set data variable '{0}' with value "
+                          "{1}".format(name, value))
 
     def __send_action(self, name: str, args: Tuple[any]) -> None:
         """ Calls the action specified by a controller with the provided
@@ -63,8 +70,11 @@ class Systems:
         for controller in self.__controllers:
             try:
                 controller.perform_action(name, args)
-            except:
-                pass
+                log.debug("Performed action '{0}' with arguments "
+                          "{1}.".format(name, args))
+            except ControllerError:
+                log.error("Failed to perform action '{0}' with arguments "
+                          "{1}.".format(name, args))
 
     def __loop(self):
         """ The main program loop for the systems computer. Listens for external
@@ -73,6 +83,7 @@ class Systems:
         dictionary with the format {"type": ["action"|"get"|"set"],
         "name": ["name"], ["args": []], ["value": any]}.
         """
+        log.info("Starting main loop...")
         while True:
             request = self.__networkManager.get_pinet().get_request()
             if request is not None:
@@ -86,19 +97,30 @@ class Systems:
                     try:
                         self.__set_data(request["name"], request["value"])
                         response = True
-                    except:
+                    except ControllerError:
                         response = False
                 self.__networkManager.get_pinet().send_response(
                     request["requestKey"],
                     response, request["peer"])
 
     def shutdown(self) -> None:
-        """ Shuts the controllers down. """
+        """ Safely shuts the controllers down. """
+        log.info("Shutting systems down...")
         for controller in self.__controllers:
             controller.shutdown()
 
 
 # Main module entry point.
 if __name__ == "__main__":
+    log.basicConfig(level=log.DEBUG,
+                    format='%(asctime)s %(levelname)-8s %(message)s',
+                    datefmt='%m-%d %H:%M',
+                    filename='./logs/systems.log',
+                    filemode='w',)
+    consoleLog = log.StreamHandler(sys.stdout)
+    consoleLog.setLevel(log.INFO)
+    consoleFormat = log.Formatter('%(levelname)-8s %(message)s')
+    consoleLog.setFormatter(consoleFormat)
+    log.getLogger('').addHandler(consoleLog)
     log.basicConfig()
     systems = Systems()

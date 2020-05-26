@@ -9,6 +9,17 @@ class VariableAccess(Enum):
     WRITE = 1
     READWRITE = 2
 
+    def __str__(self) -> str:
+        """ Overrides __str__ of base object class for VariableAccess to
+        permit useful output in logging messages.
+        """
+        if self == VariableAccess.READ:
+            return "READ"
+        elif self == VariableAccess.WRITE:
+            return "WRITE"
+        elif self == VariableAccess.READWRITE:
+            return "READWRITE"
+
 
 class ControllerData:
     """ A simple class to encapsulate the data variables shared between the

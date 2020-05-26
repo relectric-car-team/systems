@@ -42,7 +42,8 @@ class ArduinoNet:
         """
         self.__establish_contact()
         self.__conn.timeout = USB_TIMEOUT
-        log.info("Serial connection established on port {0}.".format(self.__port))
+        log.info("Serial connection established on port "
+                 "{0}.".format(self.__port))
         self.__running = True
 
     def send_data(self, data: Union[int, float], key: int) -> None:
@@ -96,7 +97,8 @@ class ArduinoNet:
             self.__conn.write(payload)
         except SerialException:
             self.__running = False
-            log.error("Serial connection failure on port {0}.".format(self.__port))
+            log.error("Serial connection failure on port "
+                      "{0}.".format(self.__port))
             raise ArduinoNetError("Serial connection failure.")
         except TypeError:
             pass
@@ -125,6 +127,7 @@ class ArduinoNet:
 
     def stop(self) -> None:
         """ Informs the Arduino and safely closes the serial connection. """
+        log.info("Closing serial connection on port {0}.".format(self.__port))
         try:
             self.__conn.write(bytes(1))
         except SerialException:
@@ -144,5 +147,6 @@ class ArduinoNet:
             self.__conn.write(b'$')
         else:
             log.error(
-                "Unable to establish serial contact on port {0}.".format(self.__port))
+                "Unable to establish serial contact on port "
+                "{0}.".format(self.__port))
             raise ArduinoNetError("Unable to establish serial contact.")

@@ -237,7 +237,8 @@ class PiNet:
             self.__conn["isRunning"] = False
             self.__conn["thread"].join()
             if self.__isServer:
-                log.info("Closing client listener at {0}.".format(self.__address))
+                log.info("Closing client listener at "
+                         "{0}.".format(self.__address))
                 for host, client in self.__clients.items():
                     client["isRunning"] = False
                     client["thread"].join()
@@ -248,9 +249,11 @@ class PiNet:
                     finally:
                         time.sleep(NETWORK_TIMEOUT)
                     client["conn"].close()
-                    log.info("Closing client connection at {0}.".format(client["host"]))
+                    log.info("Closing client connection at "
+                             "{0}.".format(client["host"]))
             else:
-                log.info("Closing server connection at {0}.".format(self.__address))
+                log.info("Closing server connection at "
+                         "{0}.".format(self.__address))
                 try:
                     self.__conn["conn"].sendall(closePayload)
                 except:  # Unable to determine the relevant exception type
@@ -354,10 +357,12 @@ class PiNet:
             if self.__isServer:
                 peer["isRunning"] = False
                 peer["conn"].close()
-                log.info("Client connection closed by peer from {0}.".format(peer["host"]))
+                log.info("Client connection closed by peer from "
+                         "{0}.".format(peer["host"]))
                 self.__clients.pop(str(peer["host"][1]))
             else:
-                log.info("Connection closed by server from {0}".format(self.__address))
+                log.info("Connection closed by server from "
+                         "{0}".format(self.__address))
                 self.__conn["isRunning"] = False
             return
         elif "responseKey" in inPayload:

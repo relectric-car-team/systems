@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Tuple
 from net import PiNet, ArduinoNet, CANBusNet
+import logging as log
 
 
 class NetworkManager:
@@ -9,21 +10,25 @@ class NetworkManager:
     these networking interfaces.
     """
 
-    def __init__(self, serial_ports: List[str]) -> None:
+    def __init__(self, address: Tuple[str, int],
+                 serial_ports: List[str]) -> None:
         """ Initializes NetworkManager and creates and starts all of the network
         interfaces.
 
+        address - A tuple containing a string with the address for the PiNet
+            instance to listen to followed by the port. (address: str, port: int)
         serial_ports - A list containing the platform identifiers (strings) for
             the	serial ports to be bound. The index of the identifier is the
             same as the integer used to retrieve a the respective ArduinoNet
             instance with getArduinoNet(). Example identifiers include 'COM3'
             for Windows and '/dev/ttyUSB0' for GNU/Linux.
         """
-        self.__pinet = PiNet(True, ("localhost", 4000))
+        log.info("Starting network interfaces...")
+        self.__pinet = PiNet(True, address)
         # Assuming we use this port
         self.__arduino_nets = []
-        for i in serial_ports:
-            self.__arduino_nets.append(ArduinoNet(i))
+        for port in serial_ports:
+            self.__arduino_nets.append(ArduinoNet(port))
         self.__canbusnet = CANBusNet()
 
     def get_pinet(self) -> PiNet:
@@ -43,6 +48,7 @@ class NetworkManager:
 
     def stop(self) -> None:
         """ Safely closes all network interfaces. """
+        log.info("Closing network interfaces...")
         self.__pinet.stop()
         for port in self.__arduino_nets:
             port.stop()
