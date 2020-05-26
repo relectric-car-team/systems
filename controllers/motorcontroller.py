@@ -42,6 +42,6 @@ class MotorController(Controller):
         self.set_variable("voltage", self.testData.get("voltage"))
         self.set_variable("temperature", self.testData.get("temperature"))
         self.set_variable("RPM", self.testData.get("RPM"))
-    
+
     def run(self):
         time.sleep(1)

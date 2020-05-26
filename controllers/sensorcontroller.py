@@ -1,6 +1,6 @@
 from test import *
 from controller import *
-
+import time
 
 class SensorController(Controller):
     """ The SensorController class communicates with sensors throughout the
