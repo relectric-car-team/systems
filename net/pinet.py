@@ -214,14 +214,6 @@ class PiNet:
         st = Thread(target=self.__send, args=(peer, payload))
         st.start()
 
-    def get_responses(self) -> dict:
-        """ Returns a dictionary containing all pending responseKey response
-        value pairs, flushing the internal storage.
-        """
-        responses = {i: r for (i, r) in self.__responses.items() if r is not None}
-        self.__responses = {i: r for (i, r) in self.__responses.items() if r is None}
-        return responses
-
     def get_request(self) -> Union[dict, None]:
         """ Returns the most recent request payload as a dictionary. If no
         requests exist then None is returned.
