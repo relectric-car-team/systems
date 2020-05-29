@@ -3,7 +3,7 @@ import json
 import random
 import time
 import logging as log
-from typing import Union, List, Dict
+from typing import Union, List, Tuple
 from threading import Thread
 from .pineterror import PiNetError
 
@@ -56,7 +56,7 @@ class PiNet:
         if self.__conn["thread"] is None:
             if self.__isServer:
                 self.__conn["isRunning"] = True
-                self.__conn["thread"] = Thread(target =self.__accept_clients)
+                self.__conn["thread"] = Thread(target=self.__accept_clients)
                 self.__conn["conn"] = socket.socket()
                 self.__conn["conn"].bind(self.__address)
                 self.__conn["thread"].start()
@@ -102,49 +102,58 @@ class PiNet:
         else:
             self.__address = address
 
-    def send_request(self, request: Dict[str, any], target="") -> int:
+    def send_request(self, name: str, value=None, target="") -> int:
         """ Sends a request to a peer (who must be specified if called by a
         server instance). Returns a responseKey integer  to retrieve the JSON
         payload returned by the peer with getResponse(). The response payload
-        will be a dict with the format {"requestKey": (int), "response":
-        (any)}.
+        will be a dict with the format {"requestKey": int, "response":
+        any}.
 
-        request - A dictionary of the format {"type": ["action"|"get"|"set"],
-            "name": ["name"], ["args": []], ["value": any]}
+        name - A string to identify the variable to be queried.
+        value - If not None, attempts to set the specified variable with value.
+            If successful, the response will be True or False if otherwise.
         target - If the caller is a server, it is necessary to specify which
             client the outgoing request is to be sent to. An exception will be
             raised if target is its default value in this case.
 
-        Raises PiNetError 'Invalid request' if the request does not follow the
-            specified format.
-        Raises PiNetError 'Target not specified for the request' when the target
-            parameter is not given when called by a server instance of PiNet.
-        Raises PiNetError 'Specified target is not available.' when the client
-            peer targeted by the operation is not connected.
+        Uncaught PiNetError 'Target not specified for the message' when the
+            target parameter is not given when called by a server instance of
+            PiNet.
+        Uncaught PiNetError 'Specified target is not available.' when
+            the client peer targeted by the operation is not connected.
         """
-        if type(request) != dict or "type" not in request or "name" not in request:
-            log.error("Invalid request.")
-            raise PiNetError("Invalid request.")
         requestKey = self.__register_response()
-        request.update({"requestKey", requestKey})
-        requestPayload = json.dumps(request, separators=(',', ':'))
-        if self.__isServer:
-            target = str(target)
-            if target != "":
-                if target in self.__clients and self.__clients[target]["isRunning"]:
-                    st = Thread(target=self.__send,
-                                args=(self.__clients[target], requestPayload))
-                    st.start()
-                else:
-                    log.error("Specified target is not available.")
-                    raise PiNetError("Specified target is not available.")
-            else:
-                log.error("Target not specified for the request.")
-                raise PiNetError("Target not specified for the request.")
+        action = {"requestKey": requestKey}
+        if value is None:
+            action.update({"type": "get", "name": name})
         else:
-            st = Thread(target=self.__send,
-                        args=(self.__conn, requestPayload))
-            st.start()
+            action.update({"type": "set", "name": name, "value": value})
+        self.__send(action, target)
+        return requestKey
+
+    def send_action(self, name: str, args: Tuple[any], target="") -> int:
+        """ Sends a request to a peer (who must be specified if called by a
+        server instance). Returns a responseKey integer  to retrieve the JSON
+        payload returned by the peer with getResponse(). The response payload
+        will be a dict with the format {"requestKey": int, "response":
+        any}.
+
+        name - A string to identify the action to be called.
+        args - A tuple of arguments to call the action with.
+        target - If the caller is a server, it is necessary to specify which
+            client the outgoing request is to be sent to. An exception will be
+            raised if target is its default value in this case.
+
+        Uncaught PiNetError 'Target not specified for the message' when the
+            target parameter is not given when called by a server instance of
+            PiNet.
+        Uncaught PiNetError 'Specified target is not available.' when
+            the client peer targeted by the operation is not connected.
+        """
+        requestKey = self.__register_response()
+        request = {"requestKey": requestKey, "type": "action",
+                   "name": name, "args": args}
+        self.__send(request, target)
         return requestKey
 
     def send_msg(self, msg: str, target="") -> None:
@@ -156,29 +165,25 @@ class PiNet:
             client the outgoing message is to be sent to. An exception will be
             raised if target is its default value in this case.
 
-        Raises PiNetError 'Target not specified for the message' when the target
-            parameter is not given when called by a server instance of PiNet.
-        Raises PiNetError 'Specified target is not available.' when the client
-            peer targeted by the operation is not connected.
+        Uncaught PiNetError 'Target not specified for the message' when the
+            target parameter is not given when called by a server instance of
+            PiNet.
+        Uncaught PiNetError 'Specified target is not available.' when
+            the client peer targeted by the operation is not connected.
         """
-        msgPayload = {"type": "msg", "msg": msg}
-        msgPayload = json.dumps(msgPayload , separators=(',', ':'))
-        if self.__isServer:
-            target = str(target)
-            if target != "":
-                if target in self.__clients and self.__clients[target]["isRunning"]:
-                    st = Thread(target=self.__send,
-                                args=(self.__clients[target], msgPayload))
-                    st.start()
-                else:
-                    log.error("Specified target is not available.")
-                    raise PiNetError("Specified target is not available.")
-            else:
-                log.error("Target not specified for the message.")
-                raise PiNetError("Target not specified for the message.")
-        else:
-            st = Thread(target=self.__send, args=(self.__conn, msgPayload))
-            st.start()
+        message = {"type": "msg", "msg": msg}
+        self.__send(message, target)
+
+    def send_response(self, response_key: int, value: any, target="") -> None:
+        """ Sends a response to a request made by a peer.
+
+        responseKey - The responseKey integer provided with the request.
+        value - The value to be returned as a response to the request.
+        peer - The connection-specific peer identifier provided as a dictionary
+            as part of the request.
+        """
+        response = {"responseKey": response_key, "response": value}
+        self.__send(response, target)
 
     def get_msg(self) -> Union[str, List[str], None]:
         """ Returns the most recent message received by a peer as a string. If
@@ -186,6 +191,15 @@ class PiNet:
         """
         if len(self.__messages) > 0:
             return self.__messages.pop(0)
+        else:
+            return None
+
+    def get_request(self) -> Union[dict, None]:
+        """ Returns the most recent request payload as a dictionary. If no
+        requests exist then None is returned.
+        """
+        if len(self.__requests) > 0:
+            return self.__requests.pop(0)
         else:
             return None
 
@@ -198,28 +212,6 @@ class PiNet:
         """
         if key in self.__responses and self.__responses[key] is None:
             return self.__responses.pop(key)
-        else:
-            return None
-
-    def send_response(self, response_key: int, value: any, peer: dict) -> None:
-        """ Sends a response to a request made by a peer.
-
-        responseKey - The responseKey integer provided with the request.
-        value - The value to be returned as a response to the request.
-        peer - The connection-specific peer identifier provided as a dictionary
-            as part of the request.
-        """
-        response = {"responseKey": response_key, "response": value}
-        payload = json.dumps(response, separators=(',', ':'))
-        st = Thread(target=self.__send, args=(peer, payload))
-        st.start()
-
-    def get_request(self) -> Union[dict, None]:
-        """ Returns the most recent request payload as a dictionary. If no
-        requests exist then None is returned.
-        """
-        if len(self.__requests) > 0:
-            return self.__requests.pop(0)
         else:
             return None
 
@@ -257,7 +249,7 @@ class PiNet:
                     time.sleep(NETWORK_TIMEOUT)
             self.__conn["conn"].close()
             self.__responses = {}
-            self.__messages	= []
+            self.__messages = []
 
     def get_connected(self) -> List[str]:
         """ Returns a list of all the connected client's host names. The
@@ -294,12 +286,45 @@ class PiNet:
         self.__responses[key] = ""
         return key
 
-    def __send(self, peer: dict, payload: str) -> None:
+    def __send(self, payload: dict, target="") -> None:
+        """ Performs the JSON encoding necessary to send a network transmission,
+        checks for errors, and invokes the sending thread with __send_payload().
+
+        payload - The information to be sent as a dictionary.
+        target - If the caller is a server, it is necessary to specify which
+            client the outgoing message is to be sent to. An exception will be
+            raised if target is its default value in this case.
+
+        Raises PiNetError 'Target not specified for the message' when the target
+            parameter is not given when called by a server instance of PiNet.
+        Raises PiNetError 'Specified target is not available.' when the client
+            peer targeted by the operation is not connected.
+        """
+        payload = json.dumps(payload, separators=(',', ':'))
+        if self.__isServer:
+            target = str(target)
+            if target != "":
+                if target in self.__clients and self.__clients[target][
+                        "isRunning"]:
+                    st = Thread(target=self.__send,
+                                args=(self.__clients[target], payload))
+                    st.start()
+                else:
+                    log.error("Specified target is not available.")
+                    raise PiNetError("Specified target is not available.")
+            else:
+                log.error("Target not specified for the message.")
+                raise PiNetError("Target not specified for the message.")
+        else:
+            st = Thread(target=self.__send, args=(self.__conn, payload))
+            st.start()
+
+    def __send_payload(self, payload: str, peer: dict) -> None:
         """ Called asynchronously to send messages to a specified peer.
 
         peer - The connection-specification dictionary of the peer the message
             should be sent to.
-            payload - A string containing the message to be sent.
+        payload - A string containing the message to be sent.
         """
         try:
             peer["conn"].sendall(payload.encode())
@@ -366,8 +391,8 @@ class PiNet:
         elif "type" in inPayload:
             if inPayload["type"] == "msg":
                 self.__messages.append(inPayload["msg"])
-            elif inPayload["type"] == "action" or inPayload["type"] == "data":
-                inPayload.update({"peer": peer})
+            else:
+                inPayload.update({"target": peer["host"][1]})
                 self.__requests.append(inPayload)
 
     def __tend_client(self, peer: dict) -> None:
