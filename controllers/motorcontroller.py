@@ -3,6 +3,7 @@ from net import *
 from controller import *
 import time
 
+
 class MotorController(Controller):
     """ The MotorController class interfaces with the motor drive to obtain
     telemetry.
@@ -37,5 +38,6 @@ class MotorController(Controller):
         self.set_variable("temperature", self.testData.get("temperature"))
         self.set_variable("RPM", self.testData.get("RPM"))
 
-    def run(self):
+    def _run(self):
+        """ Run loop for the controller """
         time.sleep(1)
