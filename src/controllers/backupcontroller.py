@@ -15,15 +15,21 @@ class BackupController(Controller):
         """
         super().__init__(network_manager)
         self.testData = TestData()
+        self.testData.update()
+        self._register_variable("speed", 0, VariableAccess.READWRITE)
+        self._register_variable("distance", 0, VariableAccess.READWRITE)
 
     def shutdown(self):
         """ Safely terminates the BackupController instance. """
         super().shutdown()
 
+        self.set_variable("speed", 0)
+        self.set_variable("distance", 0)
+
     def update(self):
         """ Updates the controller to the current data.	"""
-        pass
-
+        self.set_variable("speed", self.testData.get("speed"))
+        self.set_variable("distance", self.testData.get("distance"))
     def _run(self):
         """ Run loop for the controller """
-        time.sleep(1)
+        time.sleep(0.01667)
