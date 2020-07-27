@@ -17,16 +17,20 @@ class ClimateController(Controller):
         super().__init__(network_manager)
         self.testData = TestData()
         self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
-        # Should the ClimateController have a temperature variable?
+        self._register_variable("temperature", 0, VariableAccess.READWRITE)
+        self._register_variable("fanPower", 0, VariableAccess.READWRITE)
 
     def shutdown(self):
         """ Safely terminates the ClimateController instance. """
         super().shutdown()
-
+        self.set_variable("temperature", 0)
+        self.set_variable("fanPower", 0)
+        
     def update(self):
         """ Updates the ClimateController to the current data. """
-        pass
+        self.set_variable("temperature", self.testData.get("temperature"))
+        self.set_variable("fanPower", self.testData.get("fanPower))
 
     def _run(self):
         """ Run loop for the controller """
-        time.sleep(1)
+        time.sleep(0.01666667)
