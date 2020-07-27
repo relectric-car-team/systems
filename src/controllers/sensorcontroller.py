@@ -15,16 +15,21 @@ class SensorController(Controller):
         """
         super().__init__(network_manager)
         self.testData = TestData()
+        self._register_variable("distanceFront", 0, VariableAccess.READWRITE)
+        self._register_variable("distanceBack", 0, VariableAccess.READWRITE)
+        
 
     def shutdown(self):
         """ Safely terminates the SensorController instance. """
         super().shutdown()
-        pass
+        self.set_variable("distanceFront", 0)
+        self.set_variable("distanceBack", 0)
 
     def update(self):
         """ Updates the SensorController to the current data. """
-        pass
+        self.set_variable("distanceFront", self.testData.get("distanceFront"))
+        self.set_variable("distanceBack", self.testData.get("distanceBack"))
 
     def _run(self):
         """ Run loop for the controller """
-        time.sleep(1)
+        time.sleep(0.01666667)
