@@ -29,7 +29,7 @@ class ClimateController(Controller):
     def update(self):
         """ Updates the ClimateController to the current data. """
         self.set_variable("weatherTemp", self.testData.get("temperature"))
-        self.set_variable("fanPower", self.testData.get("fanPower))
+        self.set_variable("fanPower", self.testData.get("fanPower"))
 
     def _run(self):
         """ Run loop for the controller """
