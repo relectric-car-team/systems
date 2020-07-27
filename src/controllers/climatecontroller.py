@@ -1,7 +1,7 @@
-from test import *
-from net import *
-from controller import *
 import time
+from test import TestData
+from net import CANBusNet
+from controller import Controller
 
 
 class ClimateController(Controller):
@@ -15,8 +15,8 @@ class ClimateController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.testData = TestData()
-        self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
+        self.test_data = TestData()
+        self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
         # Should the ClimateController have a temperature variable?
 
     def shutdown(self):

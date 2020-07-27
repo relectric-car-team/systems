@@ -1,11 +1,11 @@
 from typing import Tuple, Optional, Callable
-from controllerdata import ControllerData, VariableAccess
-from abc import ABC
-from networkmanager import NetworkManager
-from controllererror import ControllerError
 import logging as log
 import threading
 import time
+from abc import ABC
+from controllerdata import ControllerData, VariableAccess
+from networkmanager import NetworkManager
+from controllererror import ControllerError
 
 
 class Controller(ABC):
@@ -19,7 +19,7 @@ class Controller(ABC):
         Controller.
         """
         log.info("Starting '{0}'.".format(type(self).__name__))
-        self.networkManager = network_manager
+        self.network_manager = network_manager
         self._variables = {}
         self._actions = {}
         self._run_thread = threading.Thread(target=self._run)
