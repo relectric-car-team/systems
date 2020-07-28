@@ -1,7 +1,7 @@
-from test import *
-from net import *
-from controller import *
 import time
+from test import TestData
+from net import CANBusNet
+from controller import Controller
 
 
 class BatteryController(Controller):
@@ -15,18 +15,27 @@ class BatteryController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.testData = TestData()
-        self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
+        self.test_data = TestData("data/BatteryControllerTestData.csv")
+        self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
         # Should the BatteryController have a voltage variable?
+        self._register_variable("voltage", 0, VariableAccess.READWRITE)
+        self._register_variable("temperature", 0, VariableAccess.READWRITE)
+        
 
     def shutdown(self):
         """ Safely terminates the BatteryController instance. """
         super().shutdown()
 
+        self.set_variable("voltage", 0)
+        self.set_variable("temperature", 0)
+
     def update(self):
         """ Updates the BatteryController to the current data. """
-        pass
+        self.set_variable("voltage", self.test_data.get("voltage"))
+        self.set_variable("temperature", self.test_data.get("temperature"))
+        self.test_data.update()
 
     def _run(self):
         """ Run loop for the controller """
-        time.sleep(1)
+        time.sleep(0.01667)
+        self.update()

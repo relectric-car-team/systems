@@ -1,7 +1,7 @@
-from test import *
-from net import *
-from controller import *
 import time
+from test import TestData
+from net import CANBusNet
+from controller import Controller
 
 
 class ClimateController(Controller):
@@ -15,8 +15,9 @@ class ClimateController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.testData = TestData()
-        self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
+        self.test_data = TestData("data/climateData.csv")
+        self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
+        # Should the ClimateController have a temperature variable?
         self._register_variable("weatherTemp", 0, VariableAccess.READWRITE)
         self._register_variable("fanPower", 0, VariableAccess.READWRITE)
 
@@ -25,12 +26,14 @@ class ClimateController(Controller):
         super().shutdown()
         self.set_variable("weatherTemp", 0)
         self.set_variable("fanPower", 0)
-        
+
     def update(self):
         """ Updates the ClimateController to the current data. """
-        self.set_variable("weatherTemp", self.testData.get("temperature"))
-        self.set_variable("fanPower", self.testData.get("fanPower"))
+        self.set_variable("weatherTemp", self.test_data.get("temperature"))
+        self.set_variable("fanPower", self.test_data.get("fanPower"))
+        self.test_data.update()
 
     def _run(self):
         """ Run loop for the controller """
         time.sleep(0.01666667)
+        self.update()
