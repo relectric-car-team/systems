@@ -1,6 +1,6 @@
-from test import *
-from controller import *
 import time
+from test import TestData
+from controller import Controller
 
 
 class BackupController(Controller):
@@ -14,8 +14,7 @@ class BackupController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.testData = TestData()
-        self.testData.update()
+        self.test_data = TestData("data/BackupControllerTestData.csv")
         self._register_variable("speed", 0, VariableAccess.READWRITE)
         self._register_variable("distance", 0, VariableAccess.READWRITE)
 
@@ -28,8 +27,11 @@ class BackupController(Controller):
 
     def update(self):
         """ Updates the controller to the current data.	"""
-        self.set_variable("speed", self.testData.get("speed"))
-        self.set_variable("distance", self.testData.get("distance"))
+        self.set_variable("speed", self.test_data.get("speed"))
+        self.set_variable("distance", self.test_data.get("distance"))
+        self.test_data.update()
+
     def _run(self):
         """ Run loop for the controller """
         time.sleep(0.01667)
+        self.update()
