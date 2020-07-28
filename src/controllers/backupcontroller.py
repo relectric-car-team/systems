@@ -1,6 +1,6 @@
-from test import *
-from controller import *
 import time
+from test import TestData
+from controller import Controller
 
 
 class BackupController(Controller):
@@ -14,7 +14,7 @@ class BackupController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.testData = TestData()
+        self.test_data = TestData()
 
     def shutdown(self):
         """ Safely terminates the BackupController instance. """

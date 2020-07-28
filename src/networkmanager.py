@@ -1,6 +1,6 @@
 from typing import List, Tuple
-from net import PiNet, ArduinoNet, CANBusNet
 import logging as log
+from net import PiNet, ArduinoNet, CANBusNet
 
 
 class NetworkManager:

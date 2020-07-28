@@ -1,7 +1,7 @@
-from test import *
-from net import *
-from controller import *
 import time
+from test import TestData
+from net import CANBusNet
+from controller import Controller, VariableAccess
 
 
 class MotorController(Controller):
@@ -14,8 +14,8 @@ class MotorController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.testData = TestData()
-        self.CANBusController = CANBusNet()  # TODO Complete initialization ASAP
+        self.test_data = TestData()
+        self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
         # self.testData.update()
         self._register_variable("speed", 0, VariableAccess.READWRITE)
         self._register_variable("voltage", 0, VariableAccess.READWRITE)
@@ -33,10 +33,10 @@ class MotorController(Controller):
 
     def update(self):
         """ Updates the controller to the current data.	"""
-        self.set_variable("speed", self.testData.get("speed"))
-        self.set_variable("voltage", self.testData.get("voltage"))
-        self.set_variable("temperature", self.testData.get("temperature"))
-        self.set_variable("RPM", self.testData.get("RPM"))
+        self.set_variable("speed", self.test_data.get("speed"))
+        self.set_variable("voltage", self.test_data.get("voltage"))
+        self.set_variable("temperature", self.test_data.get("temperature"))
+        self.set_variable("RPM", self.test_data.get("RPM"))
 
     def _run(self):
         """ Run loop for the controller """

@@ -1,5 +1,6 @@
 import logging as log
-from controller import *
+import sys
+from controller import ControllerError, Tuple
 from controllers import *
 from networkmanager import NetworkManager
 import sys
@@ -23,12 +24,12 @@ class Systems:
         """
         log.info("Initializing systems...")
         self.__controllers = []
-        self.__networkManager = NetworkManager(("localhost", 4000), [])
-        self.__controllers.append(MotorController(self.__networkManager))
-        self.__controllers.append(BatteryController(self.__networkManager))
-        self.__controllers.append(ClimateController(self.__networkManager))
-        self.__controllers.append(SensorController(self.__networkManager))
-        self.__controllers.append(BackupController(self.__networkManager))
+        self.__network_manager = NetworkManager(("localhost", 4000), [])
+        self.__controllers.append(MotorController(self.__network_manager))
+        self.__controllers.append(BatteryController(self.__network_manager))
+        self.__controllers.append(ClimateController(self.__network_manager))
+        self.__controllers.append(SensorController(self.__network_manager))
+        self.__controllers.append(BackupController(self.__network_manager))
         self.__loop()  # Note there is currently no end condition.
 
     def __get_data(self, name: str) -> any:
@@ -84,7 +85,7 @@ class Systems:
         """
         log.info("Starting main loop...")
         while True:
-            request = self.__networkManager.get_pinet().get_request()
+            request = self.__network_manager.get_pinet().get_request()
             if request is not None:
                 response = None
                 if request["type"] == "action":
@@ -98,7 +99,7 @@ class Systems:
                         response = True
                     except ControllerError:
                         response = False
-                self.__networkManager.get_pinet().send_response(
+                self.__network_manager.get_pinet().send_response(
                     request["requestKey"],
                     response, request["peer"])
 
