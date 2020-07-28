@@ -3,6 +3,7 @@ from controller import *
 from controllers import *
 from networkmanager import NetworkManager
 import sys
+import os
 
 
 class Systems:
@@ -110,15 +111,17 @@ class Systems:
 
 # Main module entry point.
 if __name__ == "__main__":
+    if not os.path.isfile("../logs/systems.log"):
+        open("../logs/systems.log", "a").close()
     log.basicConfig(level=log.DEBUG,
-                    format='%(asctime)s %(levelname)-8s %(message)s',
-                    datefmt='%m-%d %H:%M:%S',
-                    filename='./logs/systems.log',
-                    filemode='w', )
+                    format="%(asctime)s %(levelname)-8s %(message)s",
+                    datefmt="%Y-%m-%d %H:%M:%S",
+                    filename="../logs/systems.log",
+                    filemode="w")
     consoleLog = log.StreamHandler(sys.stdout)
     consoleLog.setLevel(log.INFO)
-    consoleFormat = log.Formatter('%(levelname)-8s %(message)s')
+    consoleFormat = log.Formatter("%(levelname)-8s %(message)s")
     consoleLog.setFormatter(consoleFormat)
-    log.getLogger('').addHandler(consoleLog)
+    log.getLogger("").addHandler(consoleLog)
     log.basicConfig()
     systems = Systems()
