@@ -2,6 +2,7 @@ import time
 from test import TestData
 from net import CANBusNet
 from controller import Controller
+from controllerdata import VariableAccess
 
 
 class ClimateController(Controller):

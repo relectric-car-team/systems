@@ -1,6 +1,7 @@
 import time
 from test import TestData
 from controller import Controller
+from controllerdata import VariableAccess
 
 
 class SensorController(Controller):

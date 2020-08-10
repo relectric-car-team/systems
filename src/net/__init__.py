@@ -4,3 +4,6 @@ from .arduinonet import ArduinoNet
 from .canbus import CANBusNet
 from .arduinoneterror import ArduinoNetError
 from .canbusneterror import CANBusNetError
+
+__all__ = ['PiNet', 'ArduinoNet', 'CANBusNet',
+           'ArduinoNetError', 'CANBusNetError']

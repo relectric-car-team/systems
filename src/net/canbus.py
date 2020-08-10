@@ -1,6 +1,3 @@
-from .canbusneterror import CANBusNetError
-
-
 class CANBusNet:
     """ Placeholder CANBus interface class. """
 
