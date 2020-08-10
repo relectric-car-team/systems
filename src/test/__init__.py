@@ -1,3 +1,3 @@
 from .testdata import TestData
 
-__all__ = ['TestData']
+__all__ = ["TestData"]
