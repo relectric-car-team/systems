@@ -16,7 +16,7 @@ class MotorController(Controller):
         super().__init__(network_manager)
         self.test_data = TestData()
         self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
-        # self.testData.update()
+        self.testData.update()
         self._register_variable("speed", 0, VariableAccess.READWRITE)
         self._register_variable("voltage", 0, VariableAccess.READWRITE)
         self._register_variable("temperature", 0, VariableAccess.READWRITE)
@@ -40,4 +40,4 @@ class MotorController(Controller):
 
     def _run(self):
         """ Run loop for the controller """
-        time.sleep(1)
+        time.sleep(0.01667)
