@@ -2,24 +2,21 @@ import pandas as pd  # pip install pandas
 
 # Constants
 CONST_FILE_NAME = "testdata.csv"
-col_list = ["speed", "voltage", "RPM", "temperature"]
+col_list = []
 
+df = pd.read_csv(CONST_FILE_NAME, skiprows = 1) #read the csv file, skipping the headers
 
 class TestData:
     """ TestData accesses the file of mock data to send to other classes in
     place of any engine, battery, sensor, etc. data.
     """
-
+    
     def __init__(self):
         """ Initializes TestData variables which are all potential data that
         could be	sent from other functions of the vehicle. Time is set to 0
         to begin.
         """
-        file = pd.read_csv(CONST_FILE_NAME, usecols=col_list, sep=",")
-        self.speed = file["speed"]
-        self.voltage = file["voltage"]
-        self.RPM = file["RPM"]
-        self.temperature = file["temperature"]
+        pd.read_csv(CONST_FILE_NAME, nrows = 1).col_list.tolist() #read the headers of the controller and store into a list
         self.time = 0
 
     def update(self) -> None:
@@ -28,15 +25,11 @@ class TestData:
         """
         self.time += 1
 
-    def get(self, name: str) -> None:
+    def get(self, name: str) -> any:
         """ Return any requested data that is passed as an argument. Will
         return the current data as dictated by current time value.
         """
-        if name == "speed":
-            return self.speed[self.time]
-        elif name == "voltage":
-            return self.voltage[self.time]
-        elif name == "RPM":
-            return self.RPM[self.time]
-        elif name == "temperature":
-            return self.temperature[self.time]
+
+        for i in col_list: #loop through header names
+            if name == i:
+                return df[i][self.time] #if the argument name matches the header, return the value of the argument at given time
