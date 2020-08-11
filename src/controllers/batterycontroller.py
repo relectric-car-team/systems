@@ -2,6 +2,7 @@ import time
 from test import TestData
 from net import CANBusNet
 from controller import Controller
+from controllerdata import VariableAccess
 
 
 class BatteryController(Controller):
@@ -20,7 +21,6 @@ class BatteryController(Controller):
         # Should the BatteryController have a voltage variable?
         self._register_variable("voltage", 0, VariableAccess.READWRITE)
         self._register_variable("temperature", 0, VariableAccess.READWRITE)
-        
 
     def shutdown(self):
         """ Safely terminates the BatteryController instance. """

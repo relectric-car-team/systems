@@ -1,10 +1,11 @@
 import logging as log
 import sys
-from controller import ControllerError, Tuple
-from controllers import *
-from networkmanager import NetworkManager
-import sys
 import os
+from typing import Tuple
+from networkmanager import NetworkManager
+from controllererror import ControllerError
+from controllers import MotorController, BatteryController, \
+    ClimateController, SensorController, BackupController
 
 
 class Systems:

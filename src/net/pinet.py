@@ -67,7 +67,7 @@ class PiNet:
                 try:
                     self.__conn["conn"] = socket.socket()
                     self.__conn["conn"].connect(self.__address)
-                except:  # Unable to determine the relevant exception type
+                except Exception:  # Unable to determine the relevant exception type
                     log.error("Unable to connect to server at "
                               "{0}.".format(self.__address))
                     raise PiNetError("Unable to connect to server.")
@@ -231,7 +231,7 @@ class PiNet:
                     client["thread"].join()
                     try:
                         client["conn"].sendall(closePayload)
-                    except:  # Unable to determine the relevant exception type
+                    except Exception:  # Unable to determine the relevant exception type
                         pass
                     finally:
                         time.sleep(NETWORK_TIMEOUT)
@@ -243,7 +243,7 @@ class PiNet:
                          "{0}.".format(self.__address))
                 try:
                     self.__conn["conn"].sendall(closePayload)
-                except:  # Unable to determine the relevant exception type
+                except Exception:  # Unable to determine the relevant exception type
                     pass
                 finally:
                     time.sleep(NETWORK_TIMEOUT)
@@ -328,7 +328,7 @@ class PiNet:
         """
         try:
             peer["conn"].sendall(payload.encode())
-        except:
+        except Exception:
             peer["isRunning"] = False
             peer["conn"].close()
             peer["thread"].join()
@@ -351,7 +351,7 @@ class PiNet:
         while self.__conn["isRunning"]:
             try:
                 conn, host = self.__conn["conn"].accept()
-            except:  # Unable to determine the relevant exception type
+            except Exception:  # Unable to determine the relevant exception type
                 # This will be caught continually
                 pass
             else:
@@ -427,7 +427,7 @@ class PiNet:
             data = None
             try:
                 data = peer["conn"].recv(1024)
-            except:  # Unable to determine the relevant exception type
+            except Exception:  # Unable to determine the relevant exception type
                 pass
             if data is None:
                 if len(request) > 0:
