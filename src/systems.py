@@ -6,6 +6,7 @@ from networkmanager import NetworkManager
 from controllererror import ControllerError
 from controllers import MotorController, BatteryController, \
     ClimateController, SensorController, BackupController
+from pathlib import Path
 
 
 class Systems:
@@ -113,12 +114,18 @@ class Systems:
 
 # Main module entry point.
 if __name__ == "__main__":
-    if not os.path.isfile("../logs/systems.log"):
-        open("../logs/systems.log", "a").close()
+    cwdPath = Path(__file__).parent
+    os.chdir(cwdPath)
+    logPath = cwdPath / "logs"
+    if not logPath.is_dir():
+        logPath.mkdir()
+    logPath = logPath / "systems.log"
+    if not logPath.is_file():
+        open(logPath, "a+").close()
     log.basicConfig(level=log.DEBUG,
                     format="%(asctime)s %(levelname)-8s %(message)s",
                     datefmt="%Y-%m-%d %H:%M:%S",
-                    filename="../logs/systems.log",
+                    filename=logPath,
                     filemode="w")
     consoleLog = log.StreamHandler(sys.stdout)
     consoleLog.setLevel(log.INFO)
@@ -126,4 +133,5 @@ if __name__ == "__main__":
     consoleLog.setFormatter(consoleFormat)
     log.getLogger("").addHandler(consoleLog)
     log.basicConfig()
+    log.info("Current working directory -> " + os.getcwd())
     systems = Systems()
