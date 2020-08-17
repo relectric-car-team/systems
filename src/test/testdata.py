@@ -1,5 +1,4 @@
 import pandas as pd  # pip install pandas
-import sys
 
 class TestData:
     """ TestData accesses the file of mock data to send to other classes in
