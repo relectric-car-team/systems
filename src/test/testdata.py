@@ -1,8 +1,6 @@
 import pandas as pd  # pip install pandas
 import sys
 
-# Constants
-
 class TestData:
     """ TestData accesses the file of mock data to send to other classes in
     place of any engine, battery, sensor, etc. data.
@@ -13,7 +11,7 @@ class TestData:
         could be	sent from other functions of the vehicle. Time is set to 0
         to begin.
         """
-        self.df = pd.read_csv(file_path)
+        self.file = pd.read_csv(file_path)
         self.time = 0
 
     def update(self) -> None:
@@ -27,4 +25,4 @@ class TestData:
         return the current data as dictated by current time value.
         """
 
-        return self.df[name][self.time]
+        return self.file[name][self.time]
