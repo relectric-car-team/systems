@@ -15,9 +15,8 @@ class MotorController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.test_data = TestData("data/MotorControllerTestData.csv")
+        self.test_data = TestData("test/data/MotorControllerTestData.csv")
         self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
-        self.testData.update()
         self._register_variable("speed", 0, VariableAccess.READWRITE)
         self._register_variable("voltage", 0, VariableAccess.READWRITE)
         self._register_variable("temperature", 0, VariableAccess.READWRITE)

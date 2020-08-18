@@ -16,7 +16,7 @@ class ClimateController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.test_data = TestData("data/climateData.csv")
+        self.test_data = TestData("test/data/climateData.csv")
         self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
         # Should the ClimateController have a temperature variable?
         self._register_variable("weatherTemp", 0, VariableAccess.READWRITE)

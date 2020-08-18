@@ -15,7 +15,7 @@ class BackupController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.test_data = TestData("data/BackupControllerTestData.csv")
+        self.test_data = TestData("test/data/BackupControllerTestData.csv")
         self._register_variable("speed", 0, VariableAccess.READWRITE)
         self._register_variable("distance", 0, VariableAccess.READWRITE)
 

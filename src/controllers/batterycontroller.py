@@ -16,7 +16,7 @@ class BatteryController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.test_data = TestData("data/BatteryControllerTestData.csv")
+        self.test_data = TestData("test/data/BatteryControllerTestData.csv")
         self.can_bus_controller = CANBusNet()  # TODO Complete initialization ASAP
         # Should the BatteryController have a voltage variable?
         self._register_variable("voltage", 0, VariableAccess.READWRITE)

@@ -15,7 +15,7 @@ class SensorController(Controller):
         variables.
         """
         super().__init__(network_manager)
-        self.test_data = TestData("data/sensorData.csv")
+        self.test_data = TestData("test/data/sensorData.csv")
         self._register_variable("distanceFront", 0, VariableAccess.READWRITE)
         self._register_variable("distanceBack", 0, VariableAccess.READWRITE)
 
