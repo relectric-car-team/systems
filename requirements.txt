@@ -1,19 +1,6 @@
-appdirs==1.4.4
-autopep8==1.5.4
-Cython==0.29.21
-distlib==0.3.1
-filelock==3.0.12
-flake8==3.8.4
-future==0.18.2
-iso8601==0.1.13
-mccabe==0.6.1
-pandas==1.1.4
-pycodestyle==2.6.0
-pyflakes==2.2.0
+cffi==1.14.5; implementation_name == "pypy" and python_version >= "3.6"
+py==1.10.0; python_version >= "3.6" and python_full_version < "3.0.0" and implementation_name == "pypy" or implementation_name == "pypy" and python_version >= "3.6" and python_full_version >= "3.4.0"
+pycparser==2.20; python_version >= "3.6" and python_full_version < "3.0.0" and implementation_name == "pypy" or implementation_name == "pypy" and python_version >= "3.6" and python_full_version >= "3.4.0"
 pyserial==3.5
-python-dateutil==2.8.1
-pytz==2020.4
-PyYAML==5.3.1
-# serial==0.0.97 # name conflict with pyserial (included as just 'serial')
-six==1.15.0
-# virtualenv==20.0.20 # virtualenv is deprecated in favour of 'python -m venv' 
+pyzmq==22.0.3; python_version >= "3.6"
+websockets==8.1; python_full_version >= "3.6.1"
