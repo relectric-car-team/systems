@@ -2,4 +2,4 @@
 
 *currently undergoing some wild changes*
 
-entrypoint at `src/systems.py`
+entrypoint at `systems/systems.py`
