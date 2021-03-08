@@ -3,13 +3,14 @@ from abc import ABC, abstractmethod
 from zmq import Socket
 from zmq.decorators import socket
 
+
 class Client(ABC):
     core_frontend_address: str
     identity: str
+    is_vibe_checked: bool = False
 
-    @staticmethod
-    def ping_server(socket: Socket) -> bool:
-        """Ping server for synchronized start. 
+    def vibe_check_server(self, socket: Socket) -> bool:
+        """Vibe check server for synchronized start.
 
         Args:
             socket (Socket)
@@ -19,12 +20,14 @@ class Client(ABC):
         """
         socket.send(b'')
         ready_ping = socket.recv_multipart()
-        return (b'' in ready_ping)
+        self.is_vibe_checked = b'' in ready_ping
+        return self.is_vibe_checked
+
 
     @socket()
     @abstractmethod
     def run(self, socket: Socket) -> None:
-        """Start main routine for ZMQ client endpoint. 
+        """Start main routine for ZMQ client endpoint.
 
         Args:
             socket (Socket): @decorator ZMQ Socket
@@ -32,7 +35,7 @@ class Client(ABC):
         pass # TODO: set up retry system
 
     def __call__(self) -> None:
-        """Sugar for multithreading/multiprocessing. 
+        """Sugar for multithreading/multiprocessing.
         Calling any instance of Client will just start `run`.
         """
         return self.run()
