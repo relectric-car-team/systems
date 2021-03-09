@@ -1,0 +1,11 @@
+[flake8]
+ignore =
+    # indentation is not a multiple of four,
+    E111,E114,
+    # visually indented line with same indent as next logical line,
+    E129,
+    # blank line contains whitespace error (annoying in docstrings)
+    W293
+
+max-line-length=88 
+# larger than isort/yapf so it doesn't scream at us lolol
