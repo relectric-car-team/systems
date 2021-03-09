@@ -4,4 +4,3 @@ py==1.10.0; python_version >= "3.6" and python_full_version < "3.0.0" and implem
 pycparser==2.20; python_version >= "3.6" and python_full_version < "3.0.0" and implementation_name == "pypy" or implementation_name == "pypy" and python_version >= "3.6" and python_full_version >= "3.4.0"
 pyserial==3.5
 pyzmq==22.0.3; python_version >= "3.6"
-websockets==8.1; python_full_version >= "3.6.1"

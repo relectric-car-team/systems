@@ -14,6 +14,7 @@ from .controllers import controllers
 
 
 class CoreServer:
+
     def __init__(self, backend_binding: str, frontend_binding: str):
         """Basic ZMQ server for communication between frontend clients and backend workers.
 
@@ -84,7 +85,9 @@ class CoreServer:
     def __call__(self):
         return self.run()
 
+
 class CanbusNet(Client):
+
     def __init__(self, core_frontend_address: str):
         """Client endpoint for Can Bus communication.
 
@@ -98,7 +101,9 @@ class CanbusNet(Client):
     def run(self, socket: Socket):
         socket.identity = self.identity.encode('ascii')
         socket.connect(self.core_frontend_address)
-        print(f"{self.identity} started, connecting to {self.core_frontend_address}")
+        print(
+            f"{self.identity} started, connecting to {self.core_frontend_address}"
+        )
 
         if self.vibe_check_server(socket):
             print(f"{self.identity}: Connection established")
@@ -117,8 +122,10 @@ class CanbusNet(Client):
 
 
 class PiNet(Client):
+
     def __init__(self, core_frontend_address: str):
         """Client endpoint for user interface communication.
+
         # TODO: set up websockets, can be done in ZMQ
 
         Args:
@@ -127,12 +134,13 @@ class PiNet(Client):
         self.core_frontend_address = core_frontend_address
         self.identity = u'ui'
 
-
     @socket(zmq.DEALER)
     def run(self, socket: Socket):
         socket.identity = self.identity.encode('ascii')
         socket.connect(self.core_frontend_address)
-        print(f"{self.identity} started, connecting to {self.core_frontend_address}")
+        print(
+            f"{self.identity} started, connecting to {self.core_frontend_address}"
+        )
 
         if self.vibe_check_server(socket):
             print(f"{self.identity}: Connection established")
@@ -148,6 +156,7 @@ class PiNet(Client):
                 sleep(2)
         except KeyboardInterrupt:
             return
+
 
 class ControllerWorker:
     _instance_count = count(0)
@@ -172,7 +181,9 @@ class ControllerWorker:
         """
         socket.identity = self.identity.encode('ascii')
         socket.connect(self.core_backend_address)
-        print(f"{self.identity} started, connecting to {self.core_backend_address}")
+        print(
+            f"{self.identity} started, connecting to {self.core_backend_address}"
+        )
 
         socket.send(bytes(self.identity, 'utf-8'))
         ready_ping = socket.recv()

@@ -8,9 +8,9 @@ from systems.core import CanbusNet, ControllerWorker, CoreServer, PiNet
 _frontend_address = "inproc://frontend"
 _backend_address = "inproc://backend"
 
+
 def start_systems():
-    """Set up all threads with respective tasks.
-    """
+    """Set up all threads with respective tasks."""
     core_server = CoreServer(_backend_address, _frontend_address)
     controller_worker = ControllerWorker(_backend_address)
     pi_net = PiNet(_frontend_address)
@@ -27,6 +27,7 @@ def start_systems():
 
     for task in tasks:
         task.join()
+
 
 if __name__ == "__main__":
     start_systems()

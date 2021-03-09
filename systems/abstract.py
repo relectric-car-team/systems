@@ -23,7 +23,6 @@ class Client(ABC):
         self.is_vibe_checked = b'' in ready_ping
         return self.is_vibe_checked
 
-
     @socket()
     @abstractmethod
     def run(self, socket: Socket) -> None:
@@ -32,10 +31,11 @@ class Client(ABC):
         Args:
             socket (Socket): @decorator ZMQ Socket
         """
-        pass # TODO: set up retry system
+        pass    # TODO: set up retry system
 
     def __call__(self) -> None:
         """Sugar for multithreading/multiprocessing.
+
         Calling any instance of Client will just start `run`.
         """
         return self.run()

@@ -1,0 +1,9 @@
+*
+
+!systems/**
+!tests/**
+!pyproject.toml
+!poetry.lock
+
+**/.DS_STORE
+**/__pycache__/
