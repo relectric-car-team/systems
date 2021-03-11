@@ -1,16 +1,14 @@
-files: "^(systems/|tests/|.)"
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: trailing-whitespace
+
   - repo: https://github.com/pycqa/isort
     rev: 5.6.3
     hooks:
       - id: isort
         name: isort (python)
-      # - id: isort
-      #   name: isort (cython)
-      #   types: [cython]
-      # - id: isort
-      #   name: isort (pyi)
-      #   types: [pyi]
 
   - repo: https://github.com/pre-commit/mirrors-yapf
     rev: v0.30.0
@@ -24,16 +22,16 @@ repos:
       - id: flake8
 
   - repo: https://github.com/pycqa/pydocstyle
-    rev: 5.1.1 
+    rev: 5.1.1
     hooks:
       - id: pydocstyle
-        args: [--convention, google, --add-ignore, 'D1,D417']
+        args: [--convention, google, --add-ignore, "D1,D417"]
 
   - repo: local
     hooks:
       - id: export-requirements
-        name: Export requirements.txt
+        name: export requirements.txt
         language: system
         pass_filenames: false
-        entry: .githooks/poetry_requirements.sh
+        entry: poetry export -o requirements.txt --without-hashes
         files: ^(pyproject.toml|poetry.lock)$
