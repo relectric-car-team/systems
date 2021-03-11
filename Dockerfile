@@ -1,5 +1,5 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.8-slim-buster as python-base
+FROM python:3.9.2-slim-buster as python-base
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -22,7 +22,7 @@ ENV PATH="${POETRY_HOME}/bin:${VENV_PATH}/bin:$PATH"
 
 
 FROM python-base AS builder-base
-RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential
+RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential git
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
 WORKDIR $SYSTEMS_HOME
