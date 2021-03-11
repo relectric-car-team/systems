@@ -7,5 +7,11 @@ ignore =
     # blank line contains whitespace error (annoying in docstrings)
     W293
 
-max-line-length=88 
 # larger than isort/yapf so it doesn't scream at us lolol
+max-line-length = 88
+
+# print statistics abt linting errors, etc.
+statistics = True
+
+# CoreServer is too complex rn, enable this once we fix it
+; max-complexity = 10
