@@ -28,6 +28,8 @@ class Client(ABC):
     def run(self, socket: Socket) -> None:
         """Start main routine for ZMQ client endpoint.
 
+        Mainly done through __call__().
+
         Args:
             socket (Socket): @decorator ZMQ Socket
         """

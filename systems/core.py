@@ -32,6 +32,8 @@ class CoreServer:
     def run(self, frontend: Socket, backend: Socket):
         """Start core server to facilitate client to worker communications.
 
+        Mainly ran through __call__().
+
         Args:
             frontend (Socket): @decorator Router socket
             backend (Socket): @decorator Dealer socket

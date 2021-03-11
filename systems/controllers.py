@@ -24,8 +24,8 @@ def _type_validator(instance: object, variable: attr.Attribute,
     return new_value
 
 
-class _Subscriptable:
-    """Utility base class for name-based getting/setting, and todict conversion."""
+class ControllerDecorator:
+    """Utility decorator for attr.attrs and dict-like properties."""
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -36,17 +36,19 @@ class _Subscriptable:
     def asdict(self):
         return attr.asdict(self)
 
+    def __call__(self, class_):
+        class_.__getitem__ = ControllerDecorator.__getitem__
+        class_.__setitem__ = ControllerDecorator.__setitem__
+        class_ = attr.attrs(class_,
+                            slots=True,
+                            auto_attribs=True,
+                            eq=False,
+                            on_setattr=_type_validator)
+        class_.asdict = ControllerDecorator.asdict
+        return class_
 
-def Controller(class_):
-    class_.__getitem__ = _Subscriptable.__getitem__
-    class_.__setitem__ = _Subscriptable.__setitem__
-    class_.asdict = _Subscriptable.asdict
-    class_ = attr.s(class_,
-                    slots=True,
-                    auto_attribs=True,
-                    eq=False,
-                    on_setattr=_type_validator)
-    return class_
+
+Controller = ControllerDecorator()
 
 
 @Controller
@@ -88,8 +90,3 @@ controllers = {
     "motor": MotorController(),
     "sensor": SensorController()
 }
-
-__all__ = [
-    'BackupController', 'BatteryController', 'ClimateController',
-    'MotorController', 'SensorController', 'controllers'
-]
