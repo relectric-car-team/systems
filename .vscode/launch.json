@@ -4,12 +4,12 @@
             "name": "Docker: Python - General",
             "type": "docker",
             "request": "launch",
-            "preLaunchTask": "docker-run: debug",
+            "preLaunchTask": "docker-run: development",
             "python": {
                 "pathMappings": [
                     {
                         "localRoot": "${workspaceFolder}",
-                        "remoteRoot": "/app"
+                        "remoteRoot": "/systems"
                     }
                 ],
                 "projectType": "general"
