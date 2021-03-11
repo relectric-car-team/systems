@@ -21,6 +21,33 @@
 			"python": {
 				"module": "systems"
 			}
+		},
+		{
+			"type": "docker-build",
+			"label": "docker-build: dev",
+			"platform": "python",
+			"dockerBuild": {
+				"tag": "systems:dev",
+				"dockerfile": "${workspaceFolder}/Dockerfile",
+				"context": "${workspaceFolder}",
+				"pull": true,
+				"target": "development"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "docker-run",
+			"label": "docker-run: dev",
+			"dependsOn": [
+				"docker-build: dev",
+			],
+			"python": {
+				"module": "systems"
+			}
 		}
 	]
 }
