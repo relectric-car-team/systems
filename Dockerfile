@@ -22,7 +22,7 @@ ENV PATH="${POETRY_HOME}/bin:${VENV_PATH}/bin:$PATH"
 
 
 FROM python-base AS builder-base
-RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential git
+RUN apt-get update && apt-get install --no-install-recommends -y curl build-essential
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
 WORKDIR $SYSTEMS_HOME
@@ -34,7 +34,7 @@ RUN poetry build
 
 FROM python-base AS development
 WORKDIR $SYSTEMS_HOME
-
+RUN apt-get update && apt-get install -y git gnupg2
 COPY --from=builder-base $POETRY_HOME $POETRY_HOME
 COPY --from=builder-base $SYSTEMS_HOME $SYSTEMS_HOME
 RUN poetry install

@@ -8,7 +8,9 @@
 	"dockerFile": "../Dockerfile",
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
-		"terminal.integrated.shell.linux": null
+		"terminal.integrated.shell.linux": null,
+		"python.pythonPath": "/systems/.venv/bin/python",
+		"python.defaultInterpreterPath": "/systems/.venv/bin/python"
 	},
 	"build": {
 		"target": "development"
@@ -20,11 +22,11 @@
 		"wayou.vscode-todo-highlight",
 		"hediet.vscode-drawio",
 		"eamodio.gitlens",
-	]
+	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Uncomment the next line to run commands after the container is created - for example installing curl.
-	// "postCreateCommand": "apt-get update && apt-get install -y curl",
+	// "postCreateCommand": "apt-get update && apt-get install -y curl git",
 	// Uncomment when using a ptrace-based debugger like C++, Go, and Rust
 	// "runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 	// Uncomment to use the Docker CLI from inside the container. See https://aka.ms/vscode-remote/samples/docker-from-docker.
