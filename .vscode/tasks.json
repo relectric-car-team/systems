@@ -3,10 +3,10 @@
 	"tasks": [
 		{
 			"type": "docker-build",
-			"label": "docker-build",
+			"label": "docker-build: production",
 			"platform": "python",
 			"dockerBuild": {
-				"tag": "systems:latest",
+				"tag": "systems:production",
 				"dockerfile": "${workspaceFolder}/Dockerfile",
 				"context": "${workspaceFolder}",
 				"pull": true
@@ -14,9 +14,9 @@
 		},
 		{
 			"type": "docker-run",
-			"label": "docker-run: debug",
+			"label": "docker-run: production",
 			"dependsOn": [
-				"docker-build"
+				"docker-build: production"
 			],
 			"python": {
 				"module": "systems"
@@ -24,26 +24,21 @@
 		},
 		{
 			"type": "docker-build",
-			"label": "docker-build: dev",
+			"label": "docker-build: development",
 			"platform": "python",
 			"dockerBuild": {
-				"tag": "systems:dev",
+				"target": "development",
+				"tag": "systems:development",
 				"dockerfile": "${workspaceFolder}/Dockerfile",
 				"context": "${workspaceFolder}",
-				"pull": true,
-				"target": "development"
-			},
-			"problemMatcher": [],
-			"group": {
-				"kind": "build",
-				"isDefault": true
+				"pull": true
 			}
 		},
 		{
 			"type": "docker-run",
-			"label": "docker-run: dev",
+			"label": "docker-run: development",
 			"dependsOn": [
-				"docker-build: dev",
+				"docker-build: development"
 			],
 			"python": {
 				"module": "systems"

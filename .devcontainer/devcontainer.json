@@ -22,7 +22,8 @@
 		"wayou.vscode-todo-highlight",
 		"hediet.vscode-drawio",
 		"eamodio.gitlens",
-		"mhutchie.git-graph"
+		"mhutchie.git-graph",
+		"ms-azuretools.vscode-docker"
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
