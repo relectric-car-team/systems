@@ -1,9 +1,7 @@
-*
-
-!systems/**
-!tests/**
-!pyproject.toml
-!poetry.lock
-
 **/.DS_STORE
 **/__pycache__/
+.venv/
+venv/
+dist/
+**/.pytest_cache
+.vscode/settings.json
