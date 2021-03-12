@@ -6,7 +6,7 @@ authors = ["Relectric Car Team <info@teamrelectric.ca>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9.2"
 pyzmq = "^22.0.3"
 pyserial = "^3.5"
 attrs = "^20.3.0"
