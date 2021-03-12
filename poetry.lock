@@ -328,6 +328,14 @@ docs = ["proselint (>=0.10.2)", "sphinx (>=3)", "sphinx-argparse (>=0.2.5)", "sp
 testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", "pytest (>=4)", "pytest-env (>=0.6.2)", "pytest-freezegun (>=0.4.1)", "pytest-mock (>=2)", "pytest-randomly (>=1)", "pytest-timeout (>=1)", "packaging (>=20.0)", "xonsh (>=0.9.16)"]
 
 [[package]]
+name = "yapf"
+version = "0.30.0"
+description = "A formatter for Python code."
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "zipp"
 version = "3.4.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -342,7 +350,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "cf89113425a146b10f3593b92ea10d58e236df5a62657286050b085dba1a7a05"
+content-hash = "88a788bd80ac8ea71c78ff416437b0606c607d1c72aa8d0594fd6919632187c2"
 
 [metadata.files]
 apipkg = [
@@ -557,6 +565,10 @@ typing-extensions = [
 virtualenv = [
     {file = "virtualenv-20.4.2-py2.py3-none-any.whl", hash = "sha256:2be72df684b74df0ea47679a7df93fd0e04e72520022c57b479d8f881485dbe3"},
     {file = "virtualenv-20.4.2.tar.gz", hash = "sha256:147b43894e51dd6bba882cf9c282447f780e2251cd35172403745fc381a0a80d"},
+]
+yapf = [
+    {file = "yapf-0.30.0-py2.py3-none-any.whl", hash = "sha256:3abf61ba67cf603069710d30acbc88cfe565d907e16ad81429ae90ce9651e0c9"},
+    {file = "yapf-0.30.0.tar.gz", hash = "sha256:3000abee4c28daebad55da6c85f3cd07b8062ce48e2e9943c8da1b9667d48427"},
 ]
 zipp = [
     {file = "zipp-3.4.1-py3-none-any.whl", hash = "sha256:51cb66cc54621609dd593d1787f286ee42a5c0adbb4b29abea5a63edc3e03098"},
