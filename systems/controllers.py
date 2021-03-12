@@ -6,7 +6,7 @@ def _type_validator(instance: object, variable: attr.Attribute,
     """Type validation for @attr.s - on_setattr().
 
     Args:
-        instance (object): Instace the new attribute is being set on
+        instance (object): Instance the new attribute is being set on
         variable (attr.Attribute): Instance attribute
         new_value (any)
 
@@ -25,7 +25,19 @@ def _type_validator(instance: object, variable: attr.Attribute,
 
 
 class ControllerDecorator:
-    """Utility decorator for attr.attrs and dict-like properties."""
+    """Utility decorator for attr.attrs and dict-like properties.
+
+    Allows us to do things like::
+
+        @Controller
+        class DummyController:
+            variable: int = 0
+
+        dummy = DummyController()
+        dummy['variable'] = 4
+        variable = dummy['variable]
+    ::
+    """
 
     def __getitem__(self, key):
         return getattr(self, key)
@@ -53,24 +65,50 @@ Controller = ControllerDecorator()
 
 @Controller
 class BackupController:
+    """Controller class for backup sensors.
+
+    Attributes:
+        speed (int): Defaults to 0.
+        distance (int): Defaults to 0.
+    """
     speed: int = 0
     distance: int = 0
 
 
 @Controller
 class BatteryController:
+    """Controller class for battery sensors.
+
+    Attributes:
+        voltage (int): Defaults to 0.
+        distance (int): Defaults to 0.
+    """
     voltage: int = 0
     temperature: int = 0
 
 
 @Controller
 class ClimateController:
+    """Controller class for climate sensors.
+
+    Attributes:
+        weathertemperature (int): Defaults to 0.
+        fanpower (int): Defaults to 0.
+    """
     weathertemperature: int = 0
     fanpower: int = 0
 
 
 @Controller
 class MotorController:
+    """Controller class for motor sensors.
+
+    Attributes:
+        speed (int): Defaults to 0.
+        voltage (int): Defaults to 0.
+        temperature (int): Defaults to 0.
+        rpm (int): Defaults to 0.
+    """
     speed: int = 0
     voltage: int = 0
     temperature: int = 0
@@ -79,6 +117,12 @@ class MotorController:
 
 @Controller
 class SensorController:
+    """Controller class for distance sensors.
+
+    Attributes:
+        distancefront (int): Defaults to 0.
+        distanceback (int): Defaults to 0.
+    """
     distancefront: int = 0
     distanceback: int = 0
 
