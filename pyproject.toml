@@ -14,7 +14,7 @@ attrs = "^20.3.0"
 pytest = "^6.2.2"
 pytest-xdist = "^2.2.1"
 pre-commit = "^2.11.0"
-yapf = "^0.30.0"
+yapf = "^0.31.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -24,3 +24,9 @@ build-backend = "poetry.core.masonry.api"
 multi_line_output = 4
 line_length = 79
 include_trailing_comma = true
+
+[tool.yapf]
+based_on_style = "google"
+spaces_before_comment = 4
+split_before_logical_operator = true
+column_limit = 79

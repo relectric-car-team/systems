@@ -21,7 +21,7 @@ class CoreServer:
             backend_binding (str): Address of backend binding
             frontend_binding (str): Address of frontend binding
         """
-        context = zmq.Context().instance()
+        context = zmq.Context.instance()
 
         self.backend_binding = backend_binding
         self.frontend_binding = frontend_binding

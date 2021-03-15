@@ -17,9 +17,8 @@ def _type_validator(instance: object, variable: attr.Attribute,
         new_value
     """
     current_variable_type = variable.type
-    new_value_type = type(new_value)
-    if current_variable_type != new_value_type:
-        raise TypeError(f"Trying to set type {new_value_type} "
+    if not isinstance(new_value, current_variable_type):
+        raise TypeError(f"Trying to set type {type(new_value)} "
                         f"on attribute of type {current_variable_type}")
     return new_value
 
