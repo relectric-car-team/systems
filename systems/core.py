@@ -1,12 +1,11 @@
+from __future__ import annotations
+
 from itertools import count
-from json import JSONDecodeError
 # demo
 from random import randint
 from time import sleep
 
 import zmq
-from zmq import Socket
-from zmq.decorators import socket
 from zmq.utils import jsonapi
 
 from .abstract import Client
@@ -16,75 +15,120 @@ from .controllers import controllers
 class CoreServer:
 
     def __init__(self, backend_binding: str, frontend_binding: str):
-        """Basic ZMQ server for communication between frontend clients and backend workers.
+        """ZMQ server for communication between frontend clients and backend workers.
 
         Args:
             backend_binding (str): Address of backend binding
             frontend_binding (str): Address of frontend binding
         """
+        context = zmq.Context().instance()
+
         self.backend_binding = backend_binding
         self.frontend_binding = frontend_binding
         self.worker_ids = set()
         self.client_identities = set()
 
-    @socket(zmq.ROUTER)
-    @socket(zmq.DEALER)
-    def run(self, frontend: Socket, backend: Socket):
-        """Start core server to facilitate client to worker communications.
+        self.backend = context.socket(zmq.DEALER)
+        self.frontend = context.socket(zmq.ROUTER)
+        self.poller = zmq.Poller()
 
-        Mainly ran through __call__().
+        self.is_running = False
 
-        Args:
-            frontend (Socket): @decorator Router socket
-            backend (Socket): @decorator Dealer socket
-        """
-        frontend.bind(self.frontend_binding)
-        backend.bind(self.backend_binding)
+    def run(self):
+        """Main loop to `run` the server, primarily called through __call__."""
+        self.start_listening()
+        print("Server listening.")
 
-        poller = zmq.Poller()
-        poller.register(backend, zmq.POLLIN)
-        poller.register(frontend, zmq.POLLIN)
-
-        print("Server setup finished")
-
-        while (len(self.client_identities) < 2) or (len(self.worker_ids) < 1):
+        while not self.is_fully_connected:
             try:
-                pings = dict(poller.poll())
+                self.gather_connections()
             except KeyboardInterrupt:
                 return
 
-            if frontend in pings:
-                [client_identity, _] = frontend.recv_multipart()
-                self.client_identities.add(client_identity)
-                print(f"{client_identity} connected")
-
-            if backend in pings:
-                worker_id = backend.recv()
-                self.worker_ids.add(worker_id)
-                print(f"Worker @ {worker_id} connected")
-
-        backend.send(b'')
+        self.send_ready_messages()
         print(f"{len(self.worker_ids)} worker(s) ready")
-
-        for client in self.client_identities:
-            frontend.send_multipart([client, b''])
         print(f"Server initialized, connected to {self.client_identities}")
 
-        while True:
+        while self.is_running:
             try:
-                incoming_messages = dict(poller.poll())
+                self.proxy_messages()
             except KeyboardInterrupt:
-                return
+                break
 
-            if frontend in incoming_messages:
-                message = frontend.recv_multipart()
-                backend.send_multipart(message, zmq.NOBLOCK)
+        self.frontend.close()
+        self.backend.close()
+        self.is_running = False
 
-            if backend in incoming_messages:
-                message = backend.recv_multipart()
-                frontend.send_multipart(message)
+    def start_listening(self):
+        """Configure frontend-backend poller and start listening."""
+        self.frontend.bind(self.frontend_binding)
+        self.backend.bind(self.backend_binding)
+        self.poller.register(self.backend, zmq.POLLIN)
+        self.poller.register(self.frontend, zmq.POLLIN)
 
-    def __call__(self):
+        self.is_running = True
+
+    @property
+    def is_fully_connected(self) -> bool:
+        """Check if all required clients and workers are connected.
+
+        Returns:
+            bool
+        """
+        # it might be good to parametrize this later on.
+        return len(self.client_identities) >= 2 and len(self.worker_ids) >= 1
+
+    def proxy_messages(self):
+        """Proxy messages between frontend and backend.
+
+        Currently sending all messages from frontend to backend, all
+        messages from backend to frontend. In the future, this is probably
+        where the logic for returning message to sender will go.
+        """
+        incoming_messages = dict(self.poller.poll())
+
+        if self.frontend in incoming_messages:
+            message = self.frontend.recv_multipart()
+            self.backend.send_multipart(message, zmq.NOBLOCK)
+
+        if self.backend in incoming_messages:
+            message = self.backend.recv_multipart()
+            self.frontend.send_multipart(message)
+
+    def gather_connections(self):
+        """Synchronize start between server and connected sockets."""
+        new_connections = dict(self.poller.poll())
+
+        if self.frontend in new_connections:
+            [client_identity, _] = self.frontend.recv_multipart()
+            self.client_identities.add(client_identity)
+            print(f"{client_identity} connected")
+
+        if self.backend in new_connections:
+            worker_id = self.backend.recv()
+            self.worker_ids.add(worker_id)
+            print(f"Worker @ {worker_id} connected")
+
+    def send_ready_messages(self, ready_message: str = b''):
+        """Alert frontend and backend connections server is ready to receive.
+
+        Args:
+            ready_message (str, optional): Defaults to b''.
+        """
+        self.backend.send(ready_message)
+        for client in self.client_identities:
+            self.frontend.send_multipart([client, ready_message])
+
+    def __call__(self) -> None:
+        """Treat CoreServer instance as a function.
+
+        ::
+
+            server = CoreServer()
+            server() # == server.run()
+            Thread(target=server) # == Thread(target=server.run)
+        ::
+        """
         return self.run()
 
 
@@ -96,31 +140,51 @@ class CanbusNet(Client):
         Args:
             core_frontend_address (str)
         """
+        context = zmq.Context.instance()
+
         self.core_frontend_address = core_frontend_address
         self.identity = u'canbus'
 
-    @socket(zmq.DEALER)
-    def run(self, socket: Socket):
-        socket.identity = self.identity.encode('ascii')
-        socket.connect(self.core_frontend_address)
-        print(
-            f"{self.identity} started, connecting to {self.core_frontend_address}"
-        )
+        self.socket = context.socket(zmq.DEALER)
+        self.socket.identity = self.identity.encode('ascii')
 
-        if self.vibe_check_server(socket):
-            print(f"{self.identity}: Connection established")
-        else:
-            print("Connection failure, quitting")
+        self.is_connected = False
+
+    def run(self):
+        if not self.connect_to_server():
+            print(f"{self.identity} quitting")
             return
 
+        # kept this part alone for simplicity when we setup py can
         try:
-            while True:
-                socket.send_json({"speed": randint(10, 100)})
-                message = socket.recv_json()
+            while self.is_connected:
+                self.socket.send_json(
+                    {"motor": {
+                        "temperature": randint(15, 30)
+                    }})
+                message = self.socket.recv_json()
                 print(f"Can Bus received: {message}")
                 sleep(1)
         except KeyboardInterrupt:
-            return
+            self.socket.close()
+
+    def connect_to_server(self) -> bool:
+        """Connect and register to server.
+
+        Returns:
+            bool: True if connected.
+        """
+        self.socket.connect(self.core_frontend_address)
+        print(f"{self.identity} started, "
+              f"connecting to {self.core_frontend_address}")
+
+        if self.register_to_server(self.socket):
+            print(f"{self.identity}: Connection established")
+            self.is_connected = True
+        else:
+            print("Connection failure")
+
+        return self.is_connected
 
 
 class PiNet(Client):
@@ -133,80 +197,151 @@ class PiNet(Client):
         Args:
             core_frontend_address (str)
         """
+        context = zmq.Context.instance()
+
         self.core_frontend_address = core_frontend_address
         self.identity = u'ui'
 
-    @socket(zmq.DEALER)
-    def run(self, socket: Socket):
-        socket.identity = self.identity.encode('ascii')
-        socket.connect(self.core_frontend_address)
-        print(
-            f"{self.identity} started, connecting to {self.core_frontend_address}"
-        )
+        self.socket = context.socket(zmq.DEALER)
+        self.socket.identity = self.identity.encode('ascii')
 
-        if self.vibe_check_server(socket):
-            print(f"{self.identity}: Connection established")
-        else:
-            print("Connection failure, quitting")
+        self.is_connected = False
+
+    def run(self):
+        """Loop for user interface to server connection, primarily through __call__."""
+        if not self.connect_to_server():
+            print(f"{self.identity} quitting")
             return
 
         try:
             while True:
-                socket.send_json({"temperature": randint(15, 25)})
-                message = socket.recv()
+                self.socket.send_json(
+                    {"climate": {
+                        "weathertemperature": randint(15, 30)
+                    }})
+                message = self.socket.recv_json()
                 print(f"UI received: {message}")
                 sleep(2)
         except KeyboardInterrupt:
-            return
+            self.socket.close()
+
+    def connect_to_server(self) -> bool:
+        """Connect and register to server.
+
+        Returns:
+            bool: True if connected.
+        """
+        self.socket.connect(self.core_frontend_address)
+        print(f"{self.identity} started, "
+              f"connecting to {self.core_frontend_address}")
+
+        if self.register_to_server(self.socket):
+            print(f"{self.identity}: Connection established")
+            self.is_connected = True
+        else:
+            print("Connection failure")
+
+        return self.is_connected
 
 
 class ControllerWorker:
     _instance_count = count(0)
 
     def __init__(self, core_backend_address: str):
-        """Prototype worker class, will facilitate controllers.
+        """Controller worker class to process messages and manipulate controllers.
 
         Args:
-            core_backend_address (str): Core backend binding address
+            core_backend_address (str): Core backend binding address.
         """
+        context = zmq.Context.instance()
         self._id = next(self._instance_count)
         self.identity = u'controller-worker{}'.format(self._id)
         self.core_backend_address = core_backend_address
         self.controllers = controllers
+        # NOTE: we need to look into if we can replace dealer with rep
+        self.socket = context.socket(zmq.DEALER)
+        self.socket.identity = self.identity.encode('ascii')
 
-    @socket(zmq.DEALER)
-    def run(self, socket: Socket):
-        """Start worker for controller classes.
+        self.is_connected = False
 
-        Args:
-            socket (Socket): @decorator Dealer socket
+    def run(self):
+        """Start worker for controller classes."""
+        if not self.connect_to_server():
+            print(f"{self.identity} quitting")
+            return
+
+        while True:
+            self.receive_messages()
+
+    def connect_to_server(self) -> bool:
+        """Connect and register to server.
+
+        Returns:
+            bool: True if connected.
         """
-        socket.identity = self.identity.encode('ascii')
-        socket.connect(self.core_backend_address)
+        self.socket.connect(self.core_backend_address)
         print(
             f"{self.identity} started, connecting to {self.core_backend_address}"
         )
 
-        socket.send(bytes(self.identity, 'utf-8'))
-        ready_ping = socket.recv()
-        if b'' in ready_ping:
+        if self.register_to_server():
             print(f"{self.identity}: Connection established")
+            self.is_connected = True
+        else:
+            print("Connection failure")
+        return self.is_connected
 
-        while True:
-            try:
-                identity, message = socket.recv_multipart()
-            except KeyboardInterrupt:
-                return
+    def receive_messages(self):
+        """Loop to listen for and respond to incoming messages."""
+        try:
+            identity, message = self.socket.recv_multipart()
+        except KeyboardInterrupt:
+            return
+        message: dict = jsonapi.loads(message)
+        print(f"Worker recieved {message} from {identity}")
+        self.process_messages(message)
+        message.update({"processed": True})
+        outgoing = jsonapi.dumps(message)
+        self.socket.send_multipart([identity, outgoing])
 
-            # TODO: fix this try/catch 👇🏽 with a better mechanism
-            try:
-                message: dict = jsonapi.loads(message)
-            except JSONDecodeError:
-                continue
-            print(f"Worker recieved {message} from {identity}")
-            message.update({"processed": True})
-            outgoing = jsonapi.dumps(message)
-            socket.send_multipart([identity, outgoing])
+    def register_to_server(self):
+        """Register self to server for synchronized start.
+
+        Returns:
+            bool: True if connection granted.
+        """
+        self.socket.send(bytes(self.identity, 'utf-8'))
+        ready_ping = self.socket.recv()
+        return b'' in ready_ping
+
+    def process_messages(self, message: list[dict] | dict):
+        """Intermediate step for message processing for list vs single element.
+
+        Args:
+            message (list[dict] | dict)
+        """
+        if isinstance(message, list):
+            for msg in message:
+                self.process_message(msg)
+        else:
+            self.process_message(message)
+
+    def process_message(self, message: dict):
+        """Process incoming message and update controller.
+
+        Args:
+            message (dict)
+        """
+        controller: str
+        attributes: dict
+
+        [(controller, attributes)] = message.items()
+        for attribute, new_value in attributes.items():
+            old_value = self.controllers[controller][attribute]
+            self.controllers[controller][attribute] = new_value
+            print(
+                f"{controller} controller attribute {attribute} changed to {new_value} "
+                f"from {old_value}")
 
     def __call__(self) -> None:
         return self.run()
