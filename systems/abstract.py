@@ -1,37 +1,35 @@
 from abc import ABC, abstractmethod
 
 from zmq import Socket
-from zmq.decorators import socket
 
 
 class Client(ABC):
     core_frontend_address: str
     identity: str
-    is_vibe_checked: bool = False
+    socket: Socket
+    is_connected = False
 
-    def vibe_check_server(self, socket: Socket) -> bool:
+    def register_to_server(self,
+                           socket: Socket,
+                           ready_message: str = b'') -> bool:
         """Vibe check server for synchronized start.
 
         Args:
             socket (Socket)
+            ready_message (str, optional): Defaults to b''.
 
         Returns:
             bool: True if connection granted
         """
         socket.send(b'')
         ready_ping = socket.recv_multipart()
-        self.is_vibe_checked = b'' in ready_ping
-        return self.is_vibe_checked
+        return ready_message in ready_ping
 
-    @socket()
     @abstractmethod
     def run(self, socket: Socket) -> None:
         """Start main routine for ZMQ client endpoint.
 
         Mainly done through __call__().
-
-        Args:
-            socket (Socket): @decorator ZMQ Socket
         """
         pass    # TODO: set up retry system
 
