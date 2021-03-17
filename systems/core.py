@@ -1,14 +1,10 @@
 from __future__ import annotations
 
 from itertools import count
-# demo
-from random import randint
-from time import sleep
 
 import zmq
 from zmq.utils import jsonapi
 
-from .abstract import Client
 from .controllers import controllers
 
 
@@ -130,118 +126,6 @@ class CoreServer:
         ::
         """
         return self.run()
-
-
-class CanbusNet(Client):
-
-    def __init__(self, core_frontend_address: str):
-        """Client endpoint for Can Bus communication.
-
-        Args:
-            core_frontend_address (str)
-        """
-        context = zmq.Context.instance()
-
-        self.core_frontend_address = core_frontend_address
-        self.identity = u'canbus'
-
-        self.socket = context.socket(zmq.DEALER)
-        self.socket.identity = self.identity.encode('ascii')
-
-        self.is_connected = False
-
-    def run(self):
-        if not self.connect_to_server():
-            print(f"{self.identity} quitting")
-            return
-
-        # kept this part alone for simplicity when we setup py can
-        try:
-            while self.is_connected:
-                self.socket.send_json(
-                    {"motor": {
-                        "temperature": randint(15, 30)
-                    }})
-                message = self.socket.recv_json()
-                print(f"Can Bus received: {message}")
-                sleep(1)
-        except KeyboardInterrupt:
-            self.socket.close()
-
-    def connect_to_server(self) -> bool:
-        """Connect and register to server.
-
-        Returns:
-            bool: True if connected.
-        """
-        self.socket.connect(self.core_frontend_address)
-        print(f"{self.identity} started, "
-              f"connecting to {self.core_frontend_address}")
-
-        if self.register_to_server(self.socket):
-            print(f"{self.identity}: Connection established")
-            self.is_connected = True
-        else:
-            print("Connection failure")
-
-        return self.is_connected
-
-
-class PiNet(Client):
-
-    def __init__(self, core_frontend_address: str):
-        """Client endpoint for user interface communication.
-
-        # TODO: set up websockets, can be done in ZMQ
-
-        Args:
-            core_frontend_address (str)
-        """
-        context = zmq.Context.instance()
-
-        self.core_frontend_address = core_frontend_address
-        self.identity = u'ui'
-
-        self.socket = context.socket(zmq.DEALER)
-        self.socket.identity = self.identity.encode('ascii')
-
-        self.is_connected = False
-
-    def run(self):
-        """Loop for user interface to server connection, primarily through __call__."""
-        if not self.connect_to_server():
-            print(f"{self.identity} quitting")
-            return
-
-        try:
-            while True:
-                self.socket.send_json(
-                    {"climate": {
-                        "weathertemperature": randint(15, 30)
-                    }})
-                message = self.socket.recv_json()
-                print(f"UI received: {message}")
-                sleep(2)
-        except KeyboardInterrupt:
-            self.socket.close()
-
-    def connect_to_server(self) -> bool:
-        """Connect and register to server.
-
-        Returns:
-            bool: True if connected.
-        """
-        self.socket.connect(self.core_frontend_address)
-        print(f"{self.identity} started, "
-              f"connecting to {self.core_frontend_address}")
-
-        if self.register_to_server(self.socket):
-            print(f"{self.identity}: Connection established")
-            self.is_connected = True
-        else:
-            print("Connection failure")
-
-        return self.is_connected
 
 
 class ControllerWorker:

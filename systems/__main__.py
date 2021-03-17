@@ -1,6 +1,7 @@
 from threading import Thread
 
-from systems.core import CanbusNet, ControllerWorker, CoreServer, PiNet
+from systems.clients import CanbusNet, PiNet
+from systems.core import ControllerWorker, CoreServer
 
 # In-proc transports for multi-threaded application, use ipc for multi-processed.
 # NOTE: in `inproc` transport, ensure server is started before anything
