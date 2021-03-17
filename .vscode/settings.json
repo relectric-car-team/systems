@@ -1,4 +1,0 @@
-{
-    "python.pythonPath": "/systems/.venv/bin/python",
-    "python.formatting.provider": "yapf"
-}
