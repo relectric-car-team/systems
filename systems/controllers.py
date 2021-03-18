@@ -79,9 +79,11 @@ class BatteryController:
     """Controller class for battery sensors.
 
     Attributes:
+        percentage (int): Defaults to 0.
         voltage (int): Defaults to 0.
         distance (int): Defaults to 0.
     """
+    percentage: int = 0
     voltage: int = 0
     temperature: int = 0
 
@@ -91,11 +93,15 @@ class ClimateController:
     """Controller class for climate sensors.
 
     Attributes:
-        weathertemperature (int): Defaults to 0.
+        outsidetemperature (int): Defaults to 0.
+        insidetemperature (int): Defaults to 0.
         fanpower (int): Defaults to 0.
+        temperaturesetting (int): Defaults to 0.
     """
-    weathertemperature: int = 0
+    outsidetemperature: int = 0
+    insidetemperature: int = 0
     fanpower: int = 0
+    temperaturesetting: int = 0
 
 
 @Controller
