@@ -105,7 +105,7 @@ class CoreServer:
             self.worker_ids.add(worker_id)
             print(f"Worker @ {worker_id} connected")
 
-    def send_ready_messages(self, ready_message: str = b''):
+    def send_ready_messages(self, ready_message: str = b'ready'):
         """Alert frontend and backend connections server is ready to receive.
 
         Args:
@@ -125,6 +125,36 @@ class CoreServer:
             Thread(target=server) # == Thread(target=server.run)
         ::
         """
+        return self.run()
+
+
+class BrowserProxy:
+
+    def __init__(self, core_frontend_address: str, websocket_address: str):
+        """Transport bridge proxy for communication with broswer.
+
+        Args:
+            core_frontend_address (str): Address of frontend connection
+            websocket_address (str): Address of websocket binding
+        """
+        context = zmq.Context.instance()
+
+        self.identity = u'browser'
+
+        self.core_frontend_address = core_frontend_address
+        self.websocket_address = websocket_address
+
+        self.browser_socket = context.socket(zmq.DEALER)
+        self.browser_socket.identity = self.identity.encode('ascii')
+        self.core_socket = context.socket(zmq.DEALER)
+        self.core_socket.identity = self.identity.encode('ascii')
+
+    def run(self):
+        self.browser_socket.bind(self.websocket_address)
+        self.core_socket.connect(self.core_frontend_address)
+        zmq.proxy(self.browser_socket, self.core_socket)
+
+    def __call__(self) -> None:
         return self.run()
 
 
@@ -172,7 +202,7 @@ class ControllerWorker:
             print(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            print("Connection failure")
+            print("Worker: Connection failure")
         return self.is_connected
 
     def receive_messages(self):
@@ -188,15 +218,18 @@ class ControllerWorker:
         outgoing = jsonapi.dumps(message)
         self.socket.send_multipart([identity, outgoing])
 
-    def register_to_server(self):
+    def register_to_server(self, ready_message: bytes = b'ready'):
         """Register self to server for synchronized start.
+
+        Args:
+            ready_message (bytes, optional): Defaults to b'ready'
 
         Returns:
             bool: True if connection granted.
         """
         self.socket.send(bytes(self.identity, 'utf-8'))
         ready_ping = self.socket.recv()
-        return b'' in ready_ping
+        return ready_message in ready_ping
 
     def process_messages(self, message: list[dict] | dict):
         """Intermediate step for message processing for list vs single element.

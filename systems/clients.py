@@ -19,20 +19,17 @@ class Client(ABC):
         """
         pass    # TODO: set up retry system
 
-    def register_to_server(self,
-                           socket: zmq.Socket,
-                           ready_message: str = b'') -> bool:
+    def register_to_server(self, ready_message: bytes = b'ready') -> bool:
         """Vibe check server for synchronized start.
 
         Args:
-            socket (Socket)
-            ready_message (str, optional): Defaults to b''.
+            ready_message (bytes, optional): Defaults to b'ready'.
 
         Returns:
             bool: True if connection granted
         """
-        socket.send(b'')
-        ready_ping = socket.recv_multipart()
+        self.socket.send(bytes(self.identity, 'utf-8'))
+        ready_ping = self.socket.recv()
         return ready_message in ready_ping
 
     @abstractmethod
@@ -93,16 +90,20 @@ class CanbusNet(Client):
         print(f"{self.identity} started, "
               f"connecting to {self.core_frontend_address}")
 
-        if self.register_to_server(self.socket):
+        if self.register_to_server():
             print(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            print("Connection failure")
+            print("CanbusNet: Connection failure")
 
         return self.is_connected
 
 
 class PiNet(Client):
+    """DEPRECATED: deprecated for a proxy between interface and server.
+
+    We can probably use this as a reference for a testing class.
+    """
 
     def __init__(self, core_frontend_address: str):
         """Client endpoint for user interface communication.
@@ -145,10 +146,10 @@ class PiNet(Client):
         print(f"{self.identity} started, "
               f"connecting to {self.core_frontend_address}")
 
-        if self.register_to_server(self.socket):
+        if self.register_to_server():
             print(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            print("Connection failure")
+            print("Pinet: Connection failure")
 
         return self.is_connected
