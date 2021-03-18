@@ -75,10 +75,14 @@ class CanbusNet(Client):
         # kept this part alone for simplicity when we setup py can
         try:
             while self.is_connected:
-                self.socket.send_json(
-                    {"motor": {
-                        "temperature": randint(15, 30)
-                    }})
+                self.socket.send_json({
+                    "controller": "MotorController",
+                    "data": {
+                        "speed": randint(50, 100),
+                        "voltage": randint(20, 40),
+                        "temperature": randint(50, 100)
+                    }
+                })
                 message = self.socket.recv_json()
                 print(f"Can Bus received: {message}")
                 sleep(1)
@@ -131,10 +135,18 @@ class PiNet(Client):
 
         try:
             while True:
-                self.socket.send_json(
-                    {"climate": {
-                        "weathertemperature": randint(15, 30)
-                    }})
+                self.socket.send_json([{
+                    "controller": "BatteryController",
+                    "data": {
+                        "percentage": randint(40, 50)
+                    }
+                }, {
+                    "controller": "ClimateController",
+                    "data": {
+                        "fanPower": randint(0, 4),
+                        "temperatureSetting": randint(50, 100)
+                    }
+                }])
                 message = self.socket.recv_json()
                 print(f"UI received: {message}")
                 sleep(2)

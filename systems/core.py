@@ -214,7 +214,6 @@ class ControllerWorker:
         message: dict = jsonapi.loads(message)
         print(f"Worker recieved {message} from {identity}")
         self.process_messages(message)
-        message.update({"processed": True})
         outgoing = jsonapi.dumps(message)
         self.socket.send_multipart([identity, outgoing])
 
@@ -240,8 +239,10 @@ class ControllerWorker:
         if isinstance(message, list):
             for msg in message:
                 self.process_message(msg)
+                msg.update({'processed': True})
         else:
             self.process_message(message)
+            message.update({'processed': True})
 
     def process_message(self, message: dict):
         """Process incoming message and update controller.
@@ -249,16 +250,14 @@ class ControllerWorker:
         Args:
             message (dict)
         """
-        controller: str
-        attributes: dict
+        controller_name: str = message['controller']
 
-        [(controller, attributes)] = message.items()
-        for attribute, new_value in attributes.items():
-            old_value = self.controllers[controller][attribute]
-            self.controllers[controller][attribute] = new_value
+        for attribute, value in message['data'].items():
+            old_value = self.controllers[controller_name][attribute]
+            self.controllers[controller_name][attribute] = value
             print(
-                f"{controller} controller attribute {attribute} changed to {new_value} "
-                f"from {old_value}")
+                f"{controller_name} controller attribute {attribute} changed to "
+                f"{value} from {old_value}")
 
     def __call__(self) -> None:
         return self.run()
