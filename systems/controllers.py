@@ -93,15 +93,15 @@ class ClimateController:
     """Controller class for climate sensors.
 
     Attributes:
-        outsidetemperature (int): Defaults to 0.
-        insidetemperature (int): Defaults to 0.
-        fanpower (int): Defaults to 0.
-        temperaturesetting (int): Defaults to 0.
+        outsideTemperature (int): Defaults to 0.
+        insideTemperature (int): Defaults to 0.
+        fanPower (int): Defaults to 0.
+        temperatureSetting (int): Defaults to 0.
     """
-    outsidetemperature: int = 0
-    insidetemperature: int = 0
-    fanpower: int = 0
-    temperaturesetting: int = 0
+    outsideTemperature: int = 0
+    insideTemperature: int = 0
+    fanPower: int = 0
+    temperatureSetting: int = 0
 
 
 @Controller
@@ -125,11 +125,11 @@ class SensorController:
     """Controller class for distance sensors.
 
     Attributes:
-        distancefront (int): Defaults to 0.
-        distanceback (int): Defaults to 0.
+        distanceFront (int): Defaults to 0.
+        distanceBack (int): Defaults to 0.
     """
-    distancefront: int = 0
-    distanceback: int = 0
+    distanceFront: int = 0
+    distanceBack: int = 0
 
 
 controllers = {
