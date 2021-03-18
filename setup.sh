@@ -5,9 +5,9 @@ if ! [ -x "$(command -v poetry)" ]; then
     exit 1
 else
     poetry install
-    pre-commit install
+    poetry run pre-commit install
     echo "Setting up pre-commit, this may take a while"
-    pre-commit run --all-files
+    poetry run pre-commit run --all-files
     echo "Setup completed!"
     exit 0
 fi
