@@ -133,9 +133,9 @@ class SensorController:
 
 
 controllers = {
-    "backup": BackupController(),
-    "battery": BatteryController(),
-    "climate": ClimateController(),
-    "motor": MotorController(),
-    "sensor": SensorController()
+    "BackupController": BackupController(),
+    "BatteryController": BatteryController(),
+    "ClimateController": ClimateController(),
+    "MotorController": MotorController(),
+    "SensorController": SensorController()
 }
