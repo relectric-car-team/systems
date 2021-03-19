@@ -40,4 +40,7 @@ def start_systems():
 
 
 if __name__ == "__main__":
-    start_systems()
+    try:
+        start_systems()
+    except KeyboardInterrupt:
+        pass

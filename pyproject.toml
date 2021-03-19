@@ -15,6 +15,7 @@ pytest = "^6.2.2"
 pytest-xdist = "^2.2.1"
 pre-commit = "^2.11.0"
 yapf = "^0.31.0"
+loguru = "^0.5.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
