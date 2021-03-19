@@ -3,6 +3,7 @@ from random import randint
 from time import sleep
 
 import zmq
+from loguru import logger
 
 
 class Client(ABC):
@@ -69,7 +70,7 @@ class CanbusNet(Client):
 
     def run(self):
         if not self.connect_to_server():
-            print(f"{self.identity} quitting")
+            logger.info(f"{self.identity} quitting")
             return
 
         # kept this part alone for simplicity when we setup py can
@@ -84,21 +85,21 @@ class CanbusNet(Client):
                     }
                 })
                 message = self.socket.recv_json()
-                print(f"Can Bus received: {message}")
+                logger.debug(f"Can Bus received: {message}")
                 sleep(1)
         except KeyboardInterrupt:
             self.socket.close()
 
     def connect_to_server(self) -> bool:
         self.socket.connect(self.core_frontend_address)
-        print(f"{self.identity} started, "
-              f"connecting to {self.core_frontend_address}")
+        logger.info(f"{self.identity} started, "
+                    f"connecting to {self.core_frontend_address}")
 
         if self.register_to_server():
-            print(f"{self.identity}: Connection established")
+            logger.info(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            print("CanbusNet: Connection failure")
+            logger.info("CanbusNet: Connection failure")
 
         return self.is_connected
 
@@ -130,7 +131,7 @@ class PiNet(Client):
     def run(self):
         """Loop for user interface to server connection, primarily through __call__."""
         if not self.connect_to_server():
-            print(f"{self.identity} quitting")
+            logger.info(f"{self.identity} quitting")
             return
 
         try:
@@ -148,20 +149,20 @@ class PiNet(Client):
                     }
                 }])
                 message = self.socket.recv_json()
-                print(f"UI received: {message}")
+                logger.debug(f"UI received: {message}")
                 sleep(2)
         except KeyboardInterrupt:
             self.socket.close()
 
     def connect_to_server(self) -> bool:
         self.socket.connect(self.core_frontend_address)
-        print(f"{self.identity} started, "
-              f"connecting to {self.core_frontend_address}")
+        logger.info(f"{self.identity} started, "
+                    f"connecting to {self.core_frontend_address}")
 
         if self.register_to_server():
-            print(f"{self.identity}: Connection established")
+            logger.info(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            print("Pinet: Connection failure")
+            logger.info("Pinet: Connection failure")
 
         return self.is_connected

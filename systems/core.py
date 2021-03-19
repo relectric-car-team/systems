@@ -3,6 +3,7 @@ from __future__ import annotations
 from itertools import count
 
 import zmq
+from loguru import logger
 from zmq.utils import jsonapi
 
 from .controllers import controllers
@@ -33,7 +34,7 @@ class CoreServer:
     def run(self):
         """Main loop to `run` the server, primarily called through __call__."""
         self.start_listening()
-        print("Server listening.")
+        logger.info("Server listening.")
 
         while not self.is_fully_connected:
             try:
@@ -42,8 +43,9 @@ class CoreServer:
                 return
 
         self.send_ready_messages()
-        print(f"{len(self.worker_ids)} worker(s) ready")
-        print(f"Server initialized, connected to {self.client_identities}")
+        logger.info(f"{len(self.worker_ids)} worker(s) ready")
+        logger.info(
+            f"Server initialized, connected to {self.client_identities}")
 
         while self.is_running:
             try:
@@ -98,12 +100,12 @@ class CoreServer:
         if self.frontend in new_connections:
             [client_identity, _] = self.frontend.recv_multipart()
             self.client_identities.add(client_identity)
-            print(f"{client_identity} connected")
+            logger.info(f"{client_identity} connected")
 
         if self.backend in new_connections:
             worker_id = self.backend.recv()
             self.worker_ids.add(worker_id)
-            print(f"Worker @ {worker_id} connected")
+            logger.info(f"Worker @ {worker_id} connected")
 
     def send_ready_messages(self, ready_message: str = b'ready'):
         """Alert frontend and backend connections server is ready to receive.
@@ -181,7 +183,7 @@ class ControllerWorker:
     def run(self):
         """Start worker for controller classes."""
         if not self.connect_to_server():
-            print(f"{self.identity} quitting")
+            logger.info(f"{self.identity} quitting")
             return
 
         while True:
@@ -194,15 +196,15 @@ class ControllerWorker:
             bool: True if connected.
         """
         self.socket.connect(self.core_backend_address)
-        print(
+        logger.info(
             f"{self.identity} started, connecting to {self.core_backend_address}"
         )
 
         if self.register_to_server():
-            print(f"{self.identity}: Connection established")
+            logger.info(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            print("Worker: Connection failure")
+            logger.info("Worker: Connection failure")
         return self.is_connected
 
     def receive_messages(self):
@@ -212,7 +214,7 @@ class ControllerWorker:
         except KeyboardInterrupt:
             return
         message: dict = jsonapi.loads(message)
-        print(f"Worker recieved {message} from {identity}")
+        logger.debug(f"Worker recieved {message} from {identity}")
         self.process_messages(message)
         outgoing = jsonapi.dumps(message)
         self.socket.send_multipart([identity, outgoing])
@@ -255,7 +257,7 @@ class ControllerWorker:
         for attribute, value in message['data'].items():
             old_value = self.controllers[controller_name][attribute]
             self.controllers[controller_name][attribute] = value
-            print(
+            logger.debug(
                 f"{controller_name} controller attribute {attribute} changed to "
                 f"{value} from {old_value}")
 
