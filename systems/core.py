@@ -100,12 +100,12 @@ class CoreServer:
         if self.frontend in new_connections:
             [client_identity, _] = self.frontend.recv_multipart()
             self.client_identities.add(client_identity)
-            logger.info(f"{client_identity} connected")
+            logger.success(f"{client_identity} connected")
 
         if self.backend in new_connections:
             worker_id = self.backend.recv()
             self.worker_ids.add(worker_id)
-            logger.info(f"Worker @ {worker_id} connected")
+            logger.success(f"Worker @ {worker_id} connected")
 
     def send_ready_messages(self, ready_message: str = b'ready'):
         """Alert frontend and backend connections server is ready to receive.
@@ -201,10 +201,10 @@ class ControllerWorker:
         )
 
         if self.register_to_server():
-            logger.info(f"{self.identity}: Connection established")
+            logger.success(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            logger.info("Worker: Connection failure")
+            logger.error("Worker: Connection failure")
         return self.is_connected
 
     def receive_messages(self):

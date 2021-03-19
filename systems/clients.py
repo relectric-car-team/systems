@@ -96,10 +96,10 @@ class CanbusNet(Client):
                     f"connecting to {self.core_frontend_address}")
 
         if self.register_to_server():
-            logger.info(f"{self.identity}: Connection established")
+            logger.success(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            logger.info("CanbusNet: Connection failure")
+            logger.error("CanbusNet: Connection failure")
 
         return self.is_connected
 
@@ -160,9 +160,9 @@ class PiNet(Client):
                     f"connecting to {self.core_frontend_address}")
 
         if self.register_to_server():
-            logger.info(f"{self.identity}: Connection established")
+            logger.success(f"{self.identity}: Connection established")
             self.is_connected = True
         else:
-            logger.info("Pinet: Connection failure")
+            logger.error("Pinet: Connection failure")
 
         return self.is_connected
