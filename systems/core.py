@@ -104,7 +104,7 @@ class CoreServer:
             self.frontend.send_multipart([client, ready_message])
 
     def __call__(self) -> None:
-        """Treat CoreServer instance as a function.
+        """Handles graceful exiting and sugar for Thread() syntax.
 
         ::
 
@@ -149,6 +149,7 @@ class BrowserProxy:
         zmq.proxy(self.browser_socket, self.core_socket)
 
     def __call__(self) -> None:
+        """Handles graceful exiting and sugar for Thread() syntax."""
         try:
             self.run()
         except KeyboardInterrupt:
@@ -254,6 +255,7 @@ class ControllerWorker:
                 f"{value} from {old_value}")
 
     def __call__(self) -> None:
+        """Handles graceful exiting and sugar for Thread() syntax."""
         try:
             self.run()
         except KeyboardInterrupt:
