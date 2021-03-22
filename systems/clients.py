@@ -10,7 +10,6 @@ class Client(ABC):
     core_frontend_address: str
     identity: str
     socket: zmq.Socket
-    is_connected = False
 
     @abstractmethod
     def run(self) -> None:
@@ -43,11 +42,15 @@ class Client(ABC):
         pass
 
     def __call__(self) -> None:
-        """Sugar for multithreading/multiprocessing.
+        """Handles graceful exiting and sugar for Thread() syntax.
 
         Calling any instance of Client will just start `run`.
         """
-        return self.run()
+        try:
+            self.run()
+        except KeyboardInterrupt:
+            pass
+        self.socket.close()
 
 
 class CanbusNet(Client):
@@ -66,29 +69,24 @@ class CanbusNet(Client):
         self.socket = context.socket(zmq.DEALER)
         self.socket.identity = self.identity.encode('ascii')
 
-        self.is_connected = False
-
     def run(self):
         if not self.connect_to_server():
             logger.info(f"{self.identity} quitting")
             return
 
         # kept this part alone for simplicity when we setup py can
-        try:
-            while self.is_connected:
-                self.socket.send_json({
-                    "controller": "MotorController",
-                    "data": {
-                        "speed": randint(50, 100),
-                        "voltage": randint(20, 40),
-                        "temperature": randint(50, 100)
-                    }
-                })
-                message = self.socket.recv_json()
-                logger.debug(f"Can Bus received: {message}")
-                sleep(1)
-        except KeyboardInterrupt:
-            self.socket.close()
+        while True:
+            self.socket.send_json({
+                "controller": "MotorController",
+                "data": {
+                    "speed": randint(50, 100),
+                    "voltage": randint(20, 40),
+                    "temperature": randint(50, 100)
+                }
+            })
+            message = self.socket.recv_json()
+            logger.debug(f"Can Bus received: {message}")
+            sleep(1)
 
     def connect_to_server(self) -> bool:
         self.socket.connect(self.core_frontend_address)
@@ -97,11 +95,10 @@ class CanbusNet(Client):
 
         if self.register_to_server():
             logger.success(f"{self.identity}: Connection established")
-            self.is_connected = True
+            return True
         else:
             logger.error("CanbusNet: Connection failure")
-
-        return self.is_connected
+            return False
 
 
 class PiNet(Client):
@@ -126,33 +123,28 @@ class PiNet(Client):
         self.socket = context.socket(zmq.DEALER)
         self.socket.identity = self.identity.encode('ascii')
 
-        self.is_connected = False
-
     def run(self):
         """Loop for user interface to server connection, primarily through __call__."""
         if not self.connect_to_server():
             logger.info(f"{self.identity} quitting")
             return
 
-        try:
-            while True:
-                self.socket.send_json([{
-                    "controller": "BatteryController",
-                    "data": {
-                        "percentage": randint(40, 50)
-                    }
-                }, {
-                    "controller": "ClimateController",
-                    "data": {
-                        "fanPower": randint(0, 4),
-                        "temperatureSetting": randint(50, 100)
-                    }
-                }])
-                message = self.socket.recv_json()
-                logger.debug(f"UI received: {message}")
-                sleep(2)
-        except KeyboardInterrupt:
-            self.socket.close()
+        while True:
+            self.socket.send_json([{
+                "controller": "BatteryController",
+                "data": {
+                    "percentage": randint(40, 50)
+                }
+            }, {
+                "controller": "ClimateController",
+                "data": {
+                    "fanPower": randint(0, 4),
+                    "temperatureSetting": randint(50, 100)
+                }
+            }])
+            message = self.socket.recv_json()
+            logger.debug(f"UI received: {message}")
+            sleep(2)
 
     def connect_to_server(self) -> bool:
         self.socket.connect(self.core_frontend_address)
@@ -161,8 +153,7 @@ class PiNet(Client):
 
         if self.register_to_server():
             logger.success(f"{self.identity}: Connection established")
-            self.is_connected = True
+            return True
         else:
             logger.error("Pinet: Connection failure")
-
-        return self.is_connected
+            return False
