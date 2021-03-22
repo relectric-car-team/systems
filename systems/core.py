@@ -29,33 +29,21 @@ class CoreServer:
         self.frontend = context.socket(zmq.ROUTER)
         self.poller = zmq.Poller()
 
-        self.is_running = False
-
     def run(self):
         """Main loop to `run` the server, primarily called through __call__."""
         self.start_listening()
         logger.info("Server listening.")
 
         while not self.is_fully_connected:
-            try:
-                self.gather_connections()
-            except KeyboardInterrupt:
-                return
+            self.gather_connections()
 
         self.send_ready_messages()
         logger.info(f"{len(self.worker_ids)} worker(s) ready")
         logger.info(
             f"Server initialized, connected to {self.client_identities}")
 
-        while self.is_running:
-            try:
-                self.proxy_messages()
-            except KeyboardInterrupt:
-                break
-
-        self.frontend.close()
-        self.backend.close()
-        self.is_running = False
+        while True:
+            self.proxy_messages()
 
     def start_listening(self):
         """Configure frontend-backend poller and start listening."""
@@ -63,8 +51,6 @@ class CoreServer:
         self.backend.bind(self.backend_binding)
         self.poller.register(self.backend, zmq.POLLIN)
         self.poller.register(self.frontend, zmq.POLLIN)
-
-        self.is_running = True
 
     @property
     def is_fully_connected(self) -> bool:
@@ -127,7 +113,13 @@ class CoreServer:
             Thread(target=server) # == Thread(target=server.run)
         ::
         """
-        return self.run()
+        try:
+            self.run()
+        except KeyboardInterrupt:
+            pass
+
+        self.backend.close()
+        self.frontend.close()
 
 
 class BrowserProxy:
@@ -157,7 +149,12 @@ class BrowserProxy:
         zmq.proxy(self.browser_socket, self.core_socket)
 
     def __call__(self) -> None:
-        return self.run()
+        try:
+            self.run()
+        except KeyboardInterrupt:
+            pass
+        self.core_socket.close()
+        self.browser_socket.close()
 
 
 class ControllerWorker:
@@ -177,8 +174,6 @@ class ControllerWorker:
         # NOTE: we need to look into if we can replace dealer with rep
         self.socket = context.socket(zmq.DEALER)
         self.socket.identity = self.identity.encode('ascii')
-
-        self.is_connected = False
 
     def run(self):
         """Start worker for controller classes."""
@@ -202,17 +197,14 @@ class ControllerWorker:
 
         if self.register_to_server():
             logger.success(f"{self.identity}: Connection established")
-            self.is_connected = True
+            return True
         else:
             logger.error("Worker: Connection failure")
-        return self.is_connected
+            return False
 
     def receive_messages(self):
         """Loop to listen for and respond to incoming messages."""
-        try:
-            identity, message = self.socket.recv_multipart()
-        except KeyboardInterrupt:
-            return
+        identity, message = self.socket.recv_multipart()
         message: dict = jsonapi.loads(message)
         logger.debug(f"Worker recieved {message} from {identity}")
         self.process_messages(message)
@@ -262,4 +254,9 @@ class ControllerWorker:
                 f"{value} from {old_value}")
 
     def __call__(self) -> None:
-        return self.run()
+        try:
+            self.run()
+        except KeyboardInterrupt:
+            pass
+
+        self.socket.close()
