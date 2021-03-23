@@ -1,6 +1,4 @@
-<img alt="Docker" src="https://img.shields.io/badge/Docker-2496ed.svg?&style=for-the-badge&logo=docker&logoColor=white"/>
-<img alt="Python" src="https://img.shields.io/badge/python-3776AB.svg?&style=for-the-badge&logo=python&logoColor=white"/>
-<img alt="ZeroMQ" src="https://img.shields.io/badge/ZeroMQ-DF0000.svg?&style=for-the-badge&logo=zeromq&logoColor=white"/>
+<img alt="Docker" src="https://img.shields.io/badge/Docker-2496ed.svg?&style=for-the-badge&logo=docker&logoColor=white"/> <img alt="Python" src="https://img.shields.io/badge/python-3776AB.svg?&style=for-the-badge&logo=python&logoColor=white"/> <img alt="ZeroMQ" src="https://img.shields.io/badge/ZeroMQ-DF0000.svg?&style=for-the-badge&logo=zeromq&logoColor=white"/>
 
 # Relectric Systems
 
@@ -35,11 +33,11 @@ or
 
 `poetry run python -m systems`
 
-If you're on VS Code, I also have the docstrings through the [__Python Docstring Generator__ extension](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring) on the Google docstring configuration. (we can definitely change the format if you guys want i just think the google config looks beautiful). If you're on some other editor then rip.
+If you're on VS Code, you should consider using the [__Python Docstring Generator__ extension](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring) on the Google docstring configuration. If you prefer other editors, please make sure your commits follow the current docstring convention.
 
 ### Using Docker (beta)
 
-*currently only supported on Linux and MacOS - use WSL 2 on Windows*
+*Natively only supported on Linux and MacOS - use WSL 2 on Windows*
 
 1. Clone this repository `git clone https://github.com/relectric-car-team/systems`
 2. `cd` into the `systems` folder
