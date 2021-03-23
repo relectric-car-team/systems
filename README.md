@@ -1,10 +1,12 @@
 <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ed.svg?&style=for-the-badge&logo=docker&logoColor=white"/> <img alt="Python" src="https://img.shields.io/badge/python-3776AB.svg?&style=for-the-badge&logo=python&logoColor=white"/> <img alt="ZeroMQ" src="https://img.shields.io/badge/ZeroMQ-DF0000.svg?&style=for-the-badge&logo=zeromq&logoColor=white"/>
+<img alt="yapf" src="https://img.shields.io/badge/code%20style-yapf-blue?style=for-the-badge"/>
+<img alt="precommit" src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?style=for-the-badge&logo=pre-commit&logoColor=white"/>
 
 # Relectric Systems
 
 Source code behind the development of the system architecture for our first electric car conversion. This code will allow us to connect our [User Interface](https://github.com/relectric-car-team/user-interface) to our hardware interfaces such as [CANBUS](https://github.com/relectric-car-team/canbus-mcu-base).
 
-The code base is currently based off this [architecture diagram](architecture.drawio).
+The code base is currently based off this [architecture and data flow diagram](docs/images/architecure.png).
 
 ## Getting Started
 
@@ -57,4 +59,4 @@ Please use semantic commit messages and branch naming conventions using this gui
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
