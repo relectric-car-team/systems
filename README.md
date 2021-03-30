@@ -8,6 +8,10 @@ Source code behind the development of the system architecture for our first elec
 
 The code base is currently based off this [architecture and data flow diagram](docs/images/architecure.png).
 
+## Lint Status
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/relectric-car-team/systems/master.svg)](https://results.pre-commit.ci/latest/github/relectric-car-team/systems/master)
+
+
 ## Getting Started
 
 ### Using Poetry (recommended)
