@@ -28,11 +28,3 @@ def test_controller_decorator_setters(dummy_controller):
     assert dummy_controller['attr1'] == 5
     assert dummy_controller['attr2'] == "second attr"
     assert dummy_controller.asdict() == {'attr1': 5, 'attr2': "second attr"}
-
-
-def test_controller_decorator_type_validation(dummy_controller):
-    with pytest.raises(TypeError):
-        dummy_controller['attr1'] = "string on int"
-
-    with pytest.raises(TypeError):
-        dummy_controller['attr2'] = 4

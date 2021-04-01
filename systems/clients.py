@@ -5,6 +5,8 @@ from time import sleep
 import zmq
 from loguru import logger
 
+from .controllers import Message
+
 
 class Client(ABC):
     core_frontend_address: str
@@ -76,16 +78,15 @@ class CanbusNet(Client):
 
         # kept this part alone for simplicity when we setup py can
         while True:
-            self.socket.send_json({
-                "controller": "MotorController",
-                "data": {
-                    "speed": randint(50, 100),
-                    "voltage": randint(20, 40),
-                    "temperature": randint(50, 100)
-                }
-            })
-            message = self.socket.recv_json()
-            logger.debug(f"Can Bus received: {message}")
+            dummy_message = Message(controller="MotorController",
+                                    data={
+                                        "speed": randint(50, 100),
+                                        "voltage": randint(20, 40),
+                                        "temperature": randint(50, 100)
+                                    })
+            self.socket.send_json(dummy_message)
+            incoming_message: Message = self.socket.recv_json()
+            logger.debug(f"Can Bus received: {incoming_message}")
             sleep(1)
 
     def connect_to_server(self) -> bool:
@@ -130,20 +131,18 @@ class PiNet(Client):
             return
 
         while True:
-            self.socket.send_json([{
-                "controller": "BatteryController",
-                "data": {
-                    "percentage": randint(40, 50)
-                }
-            }, {
-                "controller": "ClimateController",
-                "data": {
-                    "fanPower": randint(0, 4),
-                    "temperatureSetting": randint(50, 100)
-                }
-            }])
-            message = self.socket.recv_json()
-            logger.debug(f"UI received: {message}")
+            dummy_message = [
+                Message(controller="BatteryController",
+                        data={"percentage": randint(40, 50)}),
+                Message(controller="ClimateController",
+                        data={
+                            "fanPower": randint(0, 4),
+                            "temperatureSetting": randint(50, 100)
+                        })
+            ]
+            self.socket.send_json(dummy_message)
+            incoming_message: Message = self.socket.recv_json()
+            logger.debug(f"UI received: {incoming_message}")
             sleep(2)
 
     def connect_to_server(self) -> bool:
