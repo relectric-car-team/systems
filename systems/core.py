@@ -6,7 +6,7 @@ import zmq
 from loguru import logger
 from zmq.utils import jsonapi
 
-from .controllers import controllers
+from .controllers import Message, controllers
 
 
 class CoreServer:
@@ -206,13 +206,13 @@ class ControllerWorker:
     def receive_messages(self):
         """Loop to listen for and respond to incoming messages."""
         identity, message = self.socket.recv_multipart()
-        message: dict = jsonapi.loads(message)
+        message: Message = jsonapi.loads(message)
         logger.debug(f"Worker recieved {message} from {identity}")
         self.process_messages(message)
         outgoing = jsonapi.dumps(message)
         self.socket.send_multipart([identity, outgoing])
 
-    def register_to_server(self, ready_message: bytes = b'ready'):
+    def register_to_server(self, ready_message: bytes = b'ready') -> bool:
         """Register self to server for synchronized start.
 
         Args:
@@ -225,27 +225,27 @@ class ControllerWorker:
         ready_ping = self.socket.recv()
         return ready_message in ready_ping
 
-    def process_messages(self, message: list[dict] | dict):
+    def process_messages(self, incoming: list[Message] | Message):
         """Intermediate step for message processing for list vs single element.
 
         Args:
-            message (list[dict] | dict)
+            incoming (list[Message] | Message)
         """
-        if isinstance(message, list):
-            for msg in message:
-                self.process_message(msg)
-                msg.update({'processed': True})
+        if isinstance(incoming, list):
+            for message in incoming:
+                self.process_message(message)
+                message.update({'processed': True})
         else:
-            self.process_message(message)
-            message.update({'processed': True})
+            self.process_message(incoming)
+            incoming.update({'processed': True})
 
-    def process_message(self, message: dict):
+    def process_message(self, message: Message):
         """Process incoming message and update controller.
 
         Args:
-            message (dict)
+            message (Message)
         """
-        controller_name: str = message['controller']
+        controller_name = message['controller']
 
         for attribute, value in message['data'].items():
             old_value = self.controllers[controller_name][attribute]

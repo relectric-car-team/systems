@@ -1,26 +1,8 @@
+from __future__ import annotations
+
+from typing import Literal, TypedDict
+
 import attr
-
-
-def _type_validator(instance: object, variable: attr.Attribute,
-                    new_value: any):
-    """Type validation for @attr.s - on_setattr().
-
-    Args:
-        instance (object): Instance the new attribute is being set on
-        variable (attr.Attribute): Instance attribute
-        new_value (any)
-
-    Raises:
-        TypeError: Thrown if type mismatch
-
-    Returns:
-        new_value
-    """
-    current_variable_type = variable.type
-    if not isinstance(new_value, current_variable_type):
-        raise TypeError(f"Trying to set type {type(new_value)} "
-                        f"on attribute of type {current_variable_type}")
-    return new_value
 
 
 class ControllerDecorator:
@@ -50,11 +32,12 @@ class ControllerDecorator:
     def __call__(self, class_):
         class_.__getitem__ = ControllerDecorator.__getitem__
         class_.__setitem__ = ControllerDecorator.__setitem__
-        class_ = attr.attrs(class_,
-                            slots=True,
-                            auto_attribs=True,
-                            eq=False,
-                            on_setattr=_type_validator)
+        class_ = attr.attrs(
+            class_,
+            slots=True,
+            auto_attribs=True,
+            eq=False,
+        )
         class_.asdict = ControllerDecorator.asdict
         return class_
 
@@ -139,3 +122,12 @@ controllers = {
     "MotorController": MotorController(),
     "SensorController": SensorController()
 }
+
+
+class Message(TypedDict):
+    controller: Literal["BackupController", "BatteryController",
+                        "ClimateController", "MotorController",
+                        "SensorController"]
+    # TODO: |/ should we do list[dict] or just list?
+    data: dict | list[dict]
+    destination: list[str]
