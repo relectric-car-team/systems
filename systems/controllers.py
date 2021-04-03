@@ -26,19 +26,10 @@ class ControllerDecorator:
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
-    def asdict(self):
-        return attr.asdict(self)
-
     def __call__(self, class_):
         class_.__getitem__ = ControllerDecorator.__getitem__
         class_.__setitem__ = ControllerDecorator.__setitem__
-        class_ = attr.attrs(
-            class_,
-            slots=True,
-            auto_attribs=True,
-            eq=False,
-        )
-        class_.asdict = ControllerDecorator.asdict
+        class_ = attr.attrs(class_, slots=True, auto_attribs=True, eq=False)
         return class_
 
 
@@ -128,6 +119,7 @@ class Message(TypedDict):
     controller: Literal["BackupController", "BatteryController",
                         "ClimateController", "MotorController",
                         "SensorController"]
-    # TODO: |/ should we do list[dict] or just list?
-    data: dict | list[dict]
-    destination: list[str]
+    data: dict
+    sender: list[bytes] | None
+    # str before parsed to JSON
+    destinations: list[list[bytes]] | list[list[str]]
