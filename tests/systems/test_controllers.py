@@ -18,7 +18,6 @@ def dummy_controller():
 def test_controller_decorator_getters(dummy_controller):
     assert dummy_controller['attr1'] == 0
     assert dummy_controller['attr2'] == "attr2"
-    assert dummy_controller.asdict() == {'attr1': 0, 'attr2': "attr2"}
 
 
 def test_controller_decorator_setters(dummy_controller):
@@ -27,4 +26,3 @@ def test_controller_decorator_setters(dummy_controller):
 
     assert dummy_controller['attr1'] == 5
     assert dummy_controller['attr2'] == "second attr"
-    assert dummy_controller.asdict() == {'attr1': 5, 'attr2': "second attr"}
