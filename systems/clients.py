@@ -19,7 +19,7 @@ class Client(ABC):
 
         Mainly done through __call__().
         """
-        pass    # TODO: set up retry system
+        pass
 
     def register_to_server(self, ready_message: bytes = b'ready') -> bool:
         """Vibe check server for synchronized start.
@@ -51,8 +51,7 @@ class Client(ABC):
         try:
             self.run()
         except KeyboardInterrupt:
-            pass
-        self.socket.close()
+            self.socket.close()
 
 
 class CanbusNet(Client):
@@ -76,14 +75,15 @@ class CanbusNet(Client):
             logger.info(f"{self.identity} quitting")
             return
 
-        # kept this part alone for simplicity when we setup py can
         while True:
             dummy_message = Message(controller="MotorController",
                                     data={
                                         "speed": randint(50, 100),
                                         "voltage": randint(20, 40),
                                         "temperature": randint(50, 100)
-                                    })
+                                    },
+                                    destinations=[['browser', 'ui'],
+                                                  ['canbus']])
             self.socket.send_json(dummy_message)
             incoming_message: Message = self.socket.recv_json()
             logger.debug(f"Can Bus received: {incoming_message}")
@@ -111,8 +111,6 @@ class PiNet(Client):
     def __init__(self, core_frontend_address: str):
         """Client endpoint for user interface communication.
 
-        # TODO: set up websockets, can be done in ZMQ
-
         Args:
             core_frontend_address (str)
         """
@@ -131,15 +129,9 @@ class PiNet(Client):
             return
 
         while True:
-            dummy_message = [
-                Message(controller="BatteryController",
-                        data={"percentage": randint(40, 50)}),
-                Message(controller="ClimateController",
-                        data={
-                            "fanPower": randint(0, 4),
-                            "temperatureSetting": randint(50, 100)
-                        })
-            ]
+            dummy_message = Message(controller="BatteryController",
+                                    data={"percentage": randint(40, 50)},
+                                    destinations=[['canbus']])
             self.socket.send_json(dummy_message)
             incoming_message: Message = self.socket.recv_json()
             logger.debug(f"UI received: {incoming_message}")
@@ -156,3 +148,8 @@ class PiNet(Client):
         else:
             logger.error("Pinet: Connection failure")
             return False
+
+    def register_to_server(self, ready_message: bytes = b'ready') -> bool:
+        self.socket.send(bytes(self.identity, 'utf-8'))
+        ready_ping = self.socket.recv()
+        return ready_message in ready_ping

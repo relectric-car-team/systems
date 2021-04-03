@@ -23,7 +23,7 @@ class CoreServer:
         self.backend_binding = backend_binding
         self.frontend_binding = frontend_binding
         self.worker_ids = set()
-        self.client_identities = set()
+        self.client_identities: list[list[bytes]] = []
 
         self.backend = context.socket(zmq.DEALER)
         self.frontend = context.socket(zmq.ROUTER)
@@ -73,7 +73,7 @@ class CoreServer:
 
         if self.frontend in incoming_messages:
             message = self.frontend.recv_multipart()
-            self.backend.send_multipart(message, zmq.NOBLOCK)
+            self.backend.send_multipart(message)
 
         if self.backend in incoming_messages:
             message = self.backend.recv_multipart()
@@ -84,8 +84,8 @@ class CoreServer:
         new_connections = dict(self.poller.poll())
 
         if self.frontend in new_connections:
-            [client_identity, _] = self.frontend.recv_multipart()
-            self.client_identities.add(client_identity)
+            [*client_identity, _] = self.frontend.recv_multipart()
+            self.client_identities.append(client_identity)
             logger.success(f"{client_identity} connected")
 
         if self.backend in new_connections:
@@ -101,7 +101,7 @@ class CoreServer:
         """
         self.backend.send(ready_message)
         for client in self.client_identities:
-            self.frontend.send_multipart([client, ready_message])
+            self.frontend.send_multipart([*client, ready_message])
 
     def __call__(self) -> None:
         """Handles graceful exiting and sugar for Thread() syntax.
@@ -125,7 +125,7 @@ class CoreServer:
 class BrowserProxy:
 
     def __init__(self, core_frontend_address: str, websocket_address: str):
-        """Transport bridge proxy for communication with broswer.
+        """Transport bridge proxy for communication with browser.
 
         Args:
             core_frontend_address (str): Address of frontend connection
@@ -138,7 +138,7 @@ class BrowserProxy:
         self.core_frontend_address = core_frontend_address
         self.websocket_address = websocket_address
 
-        self.browser_socket = context.socket(zmq.DEALER)
+        self.browser_socket = context.socket(zmq.ROUTER)
         self.browser_socket.identity = self.identity.encode('ascii')
         self.core_socket = context.socket(zmq.DEALER)
         self.core_socket.identity = self.identity.encode('ascii')
@@ -205,12 +205,10 @@ class ControllerWorker:
 
     def receive_messages(self):
         """Loop to listen for and respond to incoming messages."""
-        identity, message = self.socket.recv_multipart()
-        message: Message = jsonapi.loads(message)
-        logger.debug(f"Worker recieved {message} from {identity}")
-        self.process_messages(message)
-        outgoing = jsonapi.dumps(message)
-        self.socket.send_multipart([identity, outgoing])
+        *identity, message = self.socket.recv_multipart()
+        outgoing_messages = self.process_message(identity, message)
+        for outgoing_message in outgoing_messages:
+            self.socket.send_multipart(outgoing_message)
 
     def register_to_server(self, ready_message: bytes = b'ready') -> bool:
         """Register self to server for synchronized start.
@@ -225,34 +223,35 @@ class ControllerWorker:
         ready_ping = self.socket.recv()
         return ready_message in ready_ping
 
-    def process_messages(self, incoming: list[Message] | Message):
-        """Intermediate step for message processing for list vs single element.
-
-        Args:
-            incoming (list[Message] | Message)
-        """
-        if isinstance(incoming, list):
-            for message in incoming:
-                self.process_message(message)
-                message.update({'processed': True})
-        else:
-            self.process_message(incoming)
-            incoming.update({'processed': True})
-
-    def process_message(self, message: Message):
+    def process_message(
+            self, sender: list[bytes],
+            message: bytes[Message]) -> tuple[bytes, bytes[Message]]:
         """Process incoming message and update controller.
 
         Args:
-            message (Message)
-        """
-        controller_name = message['controller']
+            sender (list[bytes])
+            message (bytes[Message])
 
+        Returns:
+            tuple[bytes, bytes[Message]]: ZMQ compatible list with route at beginning
+                                          and Message as bytes.
+        """
+        message: Message = jsonapi.loads(message)
+        logger.debug(f"Worker recieved {message} from {sender}")
+
+        controller_name = message['controller']
         for attribute, value in message['data'].items():
-            old_value = self.controllers[controller_name][attribute]
             self.controllers[controller_name][attribute] = value
-            logger.debug(
-                f"{controller_name} controller attribute {attribute} changed to "
-                f"{value} from {old_value}")
+        logger.debug(
+            f"{controller_name} updated: {self.controllers[controller_name]}")
+
+        message["sender"] = [service.decode('utf-8') for service in sender]
+        destinations = [[bytes(route, 'utf-8')
+                         for route in destination]
+                        for destination in message["destinations"]]
+
+        return [[*destination, jsonapi.dumps(message)]
+                for destination in destinations]
 
     def __call__(self) -> None:
         """Handles graceful exiting and sugar for Thread() syntax."""
