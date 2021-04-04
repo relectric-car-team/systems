@@ -1,6 +1,15 @@
 from threading import Thread
 
-from systems.clients import CanbusNet, PiNet
+try:
+    from systems.clients import CanbusNet, PiNet
+except ModuleNotFoundError:
+    import sys
+    RED = '\033[91m'
+    BOLD = '\033[1m'
+    END = '\033[0m'
+    print(RED + BOLD + "try doing `python -m systems` instead" + END)
+    sys.exit(1)
+
 from systems.core import BrowserProxy, ControllerWorker, CoreServer
 
 # In-proc transports for multi-threaded application, use ipc for multi-processed.

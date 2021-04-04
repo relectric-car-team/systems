@@ -5,7 +5,7 @@ from time import sleep
 import zmq
 from loguru import logger
 
-from .controllers import Message
+from systems.controllers import Message
 
 
 class Client(ABC):
