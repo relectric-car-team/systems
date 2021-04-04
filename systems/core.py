@@ -15,8 +15,8 @@ class CoreServer:
         """ZMQ server for communication between frontend clients and backend workers.
 
         Args:
-            backend_binding (str): Address of backend binding
-            frontend_binding (str): Address of frontend binding
+            backend_binding (str): Address of backend binding.
+            frontend_binding (str): Address of frontend binding.
         """
         context = zmq.Context.instance()
 
@@ -57,18 +57,13 @@ class CoreServer:
         """Check if all required clients and workers are connected.
 
         Returns:
-            bool
+            bool: True if server is fully connected.
         """
         # it might be good to parametrize this later on.
         return len(self.client_identities) >= 2 and len(self.worker_ids) >= 1
 
     def proxy_messages(self):
-        """Proxy messages between frontend and backend.
-
-        Currently sending all messages from frontend to backend, all
-        messages from backend to frontend. In the future, this is probably
-        where the logic for returning message to sender will go.
-        """
+        """Proxy messages between frontend and backend."""
         incoming_messages = dict(self.poller.poll())
 
         if self.frontend in incoming_messages:
@@ -129,7 +124,7 @@ class BrowserProxy:
 
         Args:
             core_frontend_address (str): Address of frontend connection
-            websocket_address (str): Address of websocket binding
+            websocket_address (str): Address of websocket binding.
         """
         context = zmq.Context.instance()
 
@@ -214,7 +209,7 @@ class ControllerWorker:
         """Register self to server for synchronized start.
 
         Args:
-            ready_message (bytes, optional): Defaults to b'ready'
+            ready_message (bytes, optional): Defaults to b'ready'.
 
         Returns:
             bool: True if connection granted.
@@ -225,7 +220,7 @@ class ControllerWorker:
 
     def process_message(
             self, sender: list[bytes],
-            message: bytes[Message]) -> tuple[bytes, bytes[Message]]:
+            message: bytes[Message]) -> list[list[bytes, bytes[Message]]]:
         """Process incoming message and update controller.
 
         Args:
@@ -233,8 +228,8 @@ class ControllerWorker:
             message (bytes[Message])
 
         Returns:
-            tuple[bytes, bytes[Message]]: ZMQ compatible list with route at beginning
-                                          and Message as bytes.
+            list[list[bytes, bytes[Message]]]: List containing ZMQ-compatible messages
+                for all destinations.
         """
         message: Message = jsonapi.loads(message)
         logger.debug(f"Worker recieved {message} from {sender}")
