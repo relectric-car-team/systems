@@ -33,7 +33,7 @@ just to setup the pre-commit environment beforehand and make sure it doesn't bug
 
 demo can be run by just
 
-`python systems`
+`python -m systems`
 
 or
 
