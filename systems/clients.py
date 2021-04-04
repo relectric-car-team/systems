@@ -28,7 +28,7 @@ class Client(ABC):
             ready_message (bytes, optional): Defaults to b'ready'.
 
         Returns:
-            bool: True if connection granted
+            bool: True if connection granted.
         """
         self.socket.send(bytes(self.identity, 'utf-8'))
         ready_ping = self.socket.recv()
@@ -39,7 +39,7 @@ class Client(ABC):
         """Connect and register to server.
 
         Returns:
-            bool: True if connection successful
+            bool: True if connection successful.
         """
         pass
 
@@ -60,7 +60,7 @@ class CanbusNet(Client):
         """Client endpoint for Can Bus communication.
 
         Args:
-            core_frontend_address (str)
+            core_frontend_address (str).
         """
         context = zmq.Context.instance()
 
