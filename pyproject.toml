@@ -12,7 +12,7 @@ attrs = "^20.3.0"
 loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.2"
+pytest = "^6.2.3"
 pytest-xdist = "^2.2.1"
 pre-commit = "^2.11.0"
 yapf = "^0.31.0"
