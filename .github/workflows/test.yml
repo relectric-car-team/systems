@@ -1,0 +1,54 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Systems CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python 3.9.1
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9.1
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.2
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: false
+
+      - name: Cache Poetry env
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-root
+
+      - name: Install library
+        run: poetry install
+
+      - name: Run Pytest
+        run: |
+          poetry run pytest . -n 2
+
+      - uses: ammaraskar/sphinx-action@master
+        with:
+          docs-folder: "docs/"
