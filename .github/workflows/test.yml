@@ -43,11 +43,11 @@ jobs:
         run: poetry install --no-root
 
       - name: Install library
-        run: poetry install
+        run: poetry install && poetry shell
 
       - name: Run Pytest
         run: |
-          poetry run pytest . -n 2
+          pytest . -n 2
 
       - uses: ammaraskar/sphinx-action@master
         with:
