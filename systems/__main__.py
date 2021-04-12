@@ -3,12 +3,10 @@ from threading import Thread
 try:
     from systems.clients import CanbusNet, PiNet
 except ModuleNotFoundError:
-    import sys
     RED = '\033[91m'
     BOLD = '\033[1m'
     END = '\033[0m'
-    print(RED + BOLD + "try doing `python -m systems` instead" + END)
-    sys.exit(1)
+    raise SystemExit(f"{RED}{BOLD}try `python -m systems` instead {END}")
 
 from systems.core import BrowserProxy, ControllerWorker, CoreServer
 
