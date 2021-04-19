@@ -43,13 +43,8 @@ jobs:
         run: poetry install --no-root
 
       - name: Install library
-        run: poetry install --no-interaction
+        run: poetry install
 
       - name: Run Pytest
         run: |
-          source .venv/bin/activate
-          pytest . -n 2
-
-      - uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
+          poetry run pytest . -n 2
