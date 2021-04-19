@@ -57,4 +57,3 @@ jobs:
         uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
-          pre-build-command: "poetry shell"
