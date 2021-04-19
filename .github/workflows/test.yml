@@ -45,10 +45,10 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
 
-      # - name: Run Pytest
-      #   run: |
-      #     source .venv/bin/activate
-      #     pytest . -n 2
+      - name: Run Pytest
+        run: |
+          source .venv/bin/activate
+          pytest . -n 2
 
       - uses: ammaraskar/sphinx-action@master
         with:
