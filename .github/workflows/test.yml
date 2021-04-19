@@ -49,6 +49,10 @@ jobs:
         run: |
           poetry run pytest . -n 2
 
+      - name: Setup for docs test
+        run: |
+          cp requirements.txt docs/
+
       - name: Check docs format
         uses: ammaraskar/sphinx-action@master
         with:
