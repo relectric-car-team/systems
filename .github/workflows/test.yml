@@ -53,3 +53,4 @@ jobs:
         uses: ammaraskar/sphinx-action@master
         with:
           docs-folder: "docs/"
+          build-command: "poetry run sphinx-build -b html ./source ./build"
