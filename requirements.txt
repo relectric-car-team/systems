@@ -200,7 +200,7 @@ markupsafe==1.1.1; python_version >= "3.5" and python_full_version < "3.0.0" or 
 mdit-py-plugins==0.2.6; python_version >= "3.6" and python_version < "4.0" \
     --hash=sha256:1e467ca2ea056e8065cbd5d6c61e5052bb50826bde84c40f6a5ed77e82125710 \
     --hash=sha256:77fd75dad81109ee91f30eb49146196f79afbbae041f298ae4886c8c2b5e23d7
-myst-parser==0.13.6; python_version >= "3.6" \
+myst_parser==0.13.6; python_version >= "3.6" \
     --hash=sha256:bec01ecebe9b9c04322f8aebd6fd8e61d2cb9ab711d531065a374cc3dcb1d7be \
     --hash=sha256:a448b3dcb39bc62a6954f5e18544b83d69ed69d8947cf01f8ebe8b654921b4bf
 nodeenv==1.6.0; python_full_version >= "3.6.1" \
