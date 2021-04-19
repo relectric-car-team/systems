@@ -8,8 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Builds documentation and publishes to GitHub Pages
     steps:
-      # Checkout repo
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
 
       - name: Setup Python 3.9.1
         uses: actions/setup-python@v2
@@ -36,25 +37,12 @@ jobs:
       - name: Install library
         run: poetry install
 
-      - uses: ammaraskar/sphinx-action@master
-        with:
-          docs-folder: "docs/"
-
-      - name: Commit documentation changes
+      - name: Build docs
         run: |
-          git clone https://github.com/relectric-car-team/systems.git --branch gh-pages --single-branch gh-pages
-          cp -r docs/_build/html/* gh-pages/
-          cd gh-pages
-          git config --local user.email "27856297+dependabot-preview[bot]@users.noreply.github.com"
-          git config --local user.name "GitHub Actions"
-          git add .
-          git commit -m "docs: Update documentation :memo:" -a || true
-          # The above command will fail if no changes were present, so we ignore
-          # the return code.
+          poetry run sphinx-build -b html ./docs/source docs_build
 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
+      - name: Deploy site
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: gh-pages
-          directory: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs_build
