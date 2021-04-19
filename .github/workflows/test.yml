@@ -51,7 +51,7 @@ jobs:
 
       - name: Setup for docs test
         run: |
-          cp requirements.txt docs/
+          poetry export --output docs/requirements.txt -E docs --without-hashes
 
       - name: Check docs format
         uses: ammaraskar/sphinx-action@master
