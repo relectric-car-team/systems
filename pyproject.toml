@@ -19,6 +19,7 @@ yapf = "^0.31.0"
 Sphinx = "^3.5.3"
 sphinx-material = "^0.0.32"
 myst-parser = "^0.13.5"
+pydoc-markdown = "^3.10.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
