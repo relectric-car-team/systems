@@ -39,7 +39,7 @@ jobs:
 
       - name: Build docs
         run: |
-          pydoc-markdown -I systems {\
+          pydoc-markdown -I systems '{\
           renderer: {\
                 type: markdown,\
                 descriptive_class_title: false,\
