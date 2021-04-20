@@ -39,10 +39,25 @@ jobs:
 
       - name: Build docs
         run: |
-          poetry run sphinx-build -b html ./docs/source docs_build
+          pydoc-markdown -I systems "{\
+          renderer: {\
+                type: markdown,\
+                descriptive_class_title: false,\
+                render_toc: false,\
+                classdef_code_block: false,\
+                insert_header_anchors: false,\
+                signature_code_block: false \
+            }\
+          }' > api.md
 
-      - name: Deploy site
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Pushes test file
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs_build
+          source_file: "api.md"
+          destination_repo: "relectric-car-team/wiki"
+          destination_folder: "software/systems"
+          user_email: "ratikrk@gmail.com"
+          user_name: "RatikKapoor"
+          commit_message: "docs: update software/systems/api"
