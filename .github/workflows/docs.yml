@@ -61,3 +61,4 @@ jobs:
           user_email: "ratikrk@gmail.com"
           user_name: "RatikKapoor"
           commit_message: "docs: update software/systems/api"
+          destination_branch: master
