@@ -50,11 +50,11 @@ jobs:
             }
           }' > build.md
           echo "---
-          title: API
+          title: API Documentation
           description: Python Systems code documentation
           published: true
           date: 2021-04-20T02:40:26.857Z
-          tags: systems, software
+          tags: systems, software, api
           editor: markdown
           dateCreated: 2021-04-20T01:53:00.734Z
           ---
