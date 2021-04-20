@@ -39,15 +39,15 @@ jobs:
 
       - name: Build docs
         run: |
-          poetry run pydoc-markdown -I systems '{\
-          renderer: {\
-                type: markdown,\
-                descriptive_class_title: false,\
-                render_toc: false,\
-                classdef_code_block: false,\
-                insert_header_anchors: false,\
-                signature_code_block: false \
-            }\
+          poetry run pydoc-markdown -I systems '{
+          renderer: {
+                type: markdown,
+                descriptive_class_title: false,
+                render_toc: false,
+                classdef_code_block: false,
+                insert_header_anchors: false,
+                signature_code_block: false 
+            }
           }' > api.md
 
       - name: Pushes test file
