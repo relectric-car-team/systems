@@ -46,7 +46,7 @@ jobs:
                 render_toc: false,
                 classdef_code_block: false,
                 insert_header_anchors: false,
-                signature_code_block: false 
+                signature_code_block: false
             }
           }' > build.md
           echo "---
@@ -61,7 +61,7 @@ jobs:
           " > api.md
           cat build.md >> api.md
 
-      - name: Push API Doc to Wiki
+      - name: Push API Doc To Wiki
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
