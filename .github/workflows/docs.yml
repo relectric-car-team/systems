@@ -61,7 +61,7 @@ jobs:
           " > api.md
           cat build.md >> api.md
 
-      - name: Pushes test file
+      - name: Push API Doc to Wiki
         uses: dmnemec/copy_file_to_another_repo_action@main
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
