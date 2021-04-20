@@ -48,7 +48,18 @@ jobs:
                 insert_header_anchors: false,
                 signature_code_block: false 
             }
-          }' > api.md
+          }' > build.md
+          echo "---
+          title: API
+          description: Python Systems code documentation
+          published: true
+          date: 2021-04-20T02:40:26.857Z
+          tags: systems, software
+          editor: markdown
+          dateCreated: 2021-04-20T01:53:00.734Z
+          ---
+          " > api.md
+          cat build.md >> api.md
 
       - name: Pushes test file
         uses: dmnemec/copy_file_to_another_repo_action@main
