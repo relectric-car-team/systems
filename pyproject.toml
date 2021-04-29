@@ -10,9 +10,6 @@ python = "^3.9.1"
 pyzmq = "^22.0.3"
 attrs = "^20.3.0"
 loguru = "^0.5.3"
-Sphinx = {version = "^3.5.4", optional = true}
-sphinx-material = {version = "^0.0.32", optional = true}
-myst-parser = {version = "^0.13.7", optional = true}
 pydoc-markdown = {version = "^3.10.1", optional = true}
 
 [tool.poetry.dev-dependencies]
