@@ -8,6 +8,10 @@ pipeline {
                 }
             }
             steps {
+                sh '''
+                    echo "[global]
+                    extra-index-url=https://www.piwheels.org/simple" > /etc/pip.conf
+                '''
                 sh 'python -m pip install poetry'
                 sh 'poetry install'
                 sh 'poetry run pyinstaller systems/__main__.py --noconfirm'
