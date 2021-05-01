@@ -11,7 +11,11 @@ pipeline {
                 sh 'python -m pip install poetry'
                 sh 'poetry install'
                 sh 'poetry run pyinstaller systems/__main__.py --noconfirm'
-                stash(name: 'output_x86', includes: 'dist/__main__/**')
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'dist/__main__/**', fingerprint: true
+                }
             }
         }
     }
