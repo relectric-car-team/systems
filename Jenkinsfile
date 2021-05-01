@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             agent {
                 docker {
-                    image 'python:3.9'
+                    image 'arm32v7/python:3.9'
                 }
             }
             steps {
