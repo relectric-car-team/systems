@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             agent {
                 docker {
-                    image 'arm64v8/python:3.9'
+                    image 'arm64v8/python:3.9-slim-buster'
                 }
             }
             steps {
