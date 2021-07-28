@@ -41,6 +41,31 @@ or
 
 If you're on VS Code, you should consider using the [__Python Docstring Generator__ extension](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring) on the Google docstring configuration. If you prefer other editors, please make sure your commits follow the current docstring convention.
 
+### Windows Installation
+
+Install [pyenv-win](https://github.com/pyenv-win/pyenv-win) to easily switch between Python versions. From pyenv, install python 3.9.1 and set it as the Python verion of the current repo.
+
+Once pyenv is setup, install [poetry](https://github.com/python-poetry/poetry#installation), change directory in your
+terminal towards the project folder and run the following command
+
+`poetry shell`
+
+to run a virtual enviroment, then
+
+`poetry install`
+
+after that, run the following command to install pre-commit scripts
+
+`pre-commit install`
+
+finally, run the demo by just entering this command
+
+`python -m systems`
+
+or
+
+`poetry run python -m systems`
+
 ### Using Docker (beta)
 
 *Natively only supported on Linux and MacOS - use WSL 2 on Windows*
