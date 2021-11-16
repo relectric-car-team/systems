@@ -9,6 +9,15 @@ from systems.controllers import Message
 
 
 class Client(ABC):
+    """Write description for each class like so.
+
+    Attributes:
+        Something here.
+
+    Methods:
+        Something here.
+
+    """
     core_frontend_address: str
     identity: str
     socket: zmq.Socket
@@ -55,6 +64,15 @@ class Client(ABC):
 
 
 class CanbusNet(Client):
+    """Write description for each class like so.
+
+    Attributes:
+        Something here.
+
+    Methods:
+        Something here.
+
+    """
 
     def __init__(self, core_frontend_address: str):
         """Client endpoint for Can Bus communication.

@@ -10,6 +10,15 @@ from systems.controllers import Message, controllers
 
 
 class CoreServer:
+    """Write description for each class like so.
+
+    Attributes:
+        Something here.
+
+    Methods:
+        Something here.
+
+    """
 
     def __init__(self, backend_binding: str, frontend_binding: str):
         """ZMQ server for communication between frontend clients and backend workers.
@@ -118,6 +127,15 @@ class CoreServer:
 
 
 class BrowserProxy:
+    """Write description for each class like so.
+
+    Attributes:
+        Something here.
+
+    Methods:
+        Something here.
+
+    """
 
     def __init__(self, core_frontend_address: str, websocket_address: str):
         """Transport bridge proxy for communication with browser.
@@ -154,6 +172,15 @@ class BrowserProxy:
 
 
 class ControllerWorker:
+    """Write description for each class like so.
+
+    Attributes:
+        Something here.
+
+    Methods:
+        Something here.
+
+    """
     _instance_count = count(0)
 
     def __init__(self, core_backend_address: str):

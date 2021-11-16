@@ -116,6 +116,15 @@ controllers = {
 
 
 class Message(TypedDict):
+    """Write description for each class like so.
+
+    Attributes:
+        Something here.
+
+    Methods:
+        Something here.
+
+    """
     controller: Literal["BackupController", "BatteryController",
                         "ClimateController", "MotorController",
                         "SensorController"]
