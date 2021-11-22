@@ -3,12 +3,12 @@ from threading import Thread
 try:
     from systems.clients import CanbusNet, PiNet
 except ModuleNotFoundError:
-    RED = '\033[91m'
-    BOLD = '\033[1m'
-    END = '\033[0m'
+    RED = "\033[91m"
+    BOLD = "\033[1m"
+    END = "\033[0m"
     raise SystemExit(f"{RED}{BOLD}try `python -m systems` instead {END}")
 
-from systems.core import BrowserProxy, ControllerWorker, CoreServer
+from systems.core import BrowserProxy, ControllerWorker, CoreServer, DatabaseProxy
 
 # In-proc transports for multi-threaded application, use ipc for multi-processed.
 # NOTE: in `inproc` transport, ensure server is started before anything
@@ -16,6 +16,7 @@ from systems.core import BrowserProxy, ControllerWorker, CoreServer
 _frontend_address = "inproc://frontend"
 _backend_address = "inproc://backend"
 _browser_address = "ws://127.0.0.1:8001"
+_database_address = "tcp://*:8002"
 
 
 def start_systems():
@@ -23,12 +24,14 @@ def start_systems():
     core_server = CoreServer(_backend_address, _frontend_address)
     controller_worker = ControllerWorker(_backend_address)
     browser_proxy = BrowserProxy(_frontend_address, _browser_address)
+    database_proxy = DatabaseProxy(_frontend_address, _database_address)
     pi_net = PiNet(_browser_address)
     canbus_net = CanbusNet(_frontend_address)
 
     server = Thread(target=core_server)
     controllers = Thread(target=controller_worker)
     browser = Thread(target=browser_proxy)
+    database = Thread(target=database_proxy)
     ui = Thread(target=pi_net)
     canbus = Thread(target=canbus_net)
 
@@ -36,6 +39,7 @@ def start_systems():
         server,
         controllers,
         browser,
+        database,
         canbus,
         ui,
     )
