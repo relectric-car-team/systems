@@ -1,33 +1,14 @@
-ci:
-  skip: [export-requirements]
-
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
-    hooks:
-      - id: trailing-whitespace
-
-      - id: end-of-file-fixer
-        name: Fix End of Files
-        description: Ensures that a file is either empty, or ends with one newline.
-        entry: end-of-file-fixer
-        language: python
-        types: [text]
-        stages: [commit, push]
-
   - repo: https://github.com/pycqa/isort
     rev: 5.8.0
     hooks:
       - id: isort
         name: isort (python)
 
-  - repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.31.0
+  - repo: https://github.com/ambv/black
+    rev: stable
     hooks:
-      - id: yapf
-        args: [--parallel, --in-place]
-        additional_dependencies:
-          - toml
+      - id: black
 
   - repo: https://github.com/PyCQA/flake8
     rev: 3.9.1
@@ -38,12 +19,3 @@ repos:
     rev: 6.0.0
     hooks:
       - id: pydocstyle
-
-  - repo: local
-    hooks:
-      - id: export-requirements
-        name: export requirements.txt
-        language: system
-        pass_filenames: false
-        entry: poetry export -o requirements.txt --without-hashes
-        files: ^(pyproject.toml|poetry.lock)$
