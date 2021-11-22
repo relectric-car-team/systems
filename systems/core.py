@@ -60,7 +60,7 @@ class CoreServer:
             bool: True if server is fully connected.
         """
         # it might be good to parametrize this later on.
-        return len(self.client_identities) >= 2 and len(self.worker_ids) >= 1
+        return len(self.client_identities) >= 3 and len(self.worker_ids) >= 1
 
     def proxy_messages(self):
         """Proxy messages between frontend and backend."""
@@ -151,6 +151,42 @@ class BrowserProxy:
             pass
         self.core_socket.close()
         self.browser_socket.close()
+
+
+class DatabaseProxy:
+
+    def __init__(self, core_frontend_address: str, db_address: str):
+        """Transport bridge proxy for communication with database service.
+
+        Args:
+            core_frontend_address (str): Address of frontend connection
+            db_address (str): Address of database service
+        """
+        context = zmq.Context.instance()
+
+        self.identity = u'database'
+
+        self.core_frontend_address = core_frontend_address
+        self.db_address = db_address
+
+        self.db_socket = context.socket(zmq.ROUTER)
+        self.db_socket.identity = self.identity.encode('ascii')
+        self.core_socket = context.socket(zmq.DEALER)
+        self.core_socket.identity = self.identity.encode('ascii')
+
+    def run(self):
+        self.db_socket.bind(self.db_address)
+        self.core_socket.connect(self.core_frontend_address)
+        zmq.proxy(self.db_socket, self.core_socket)
+
+    def __call__(self) -> None:
+        """Handles graceful exiting and sugar for Thread() syntax."""
+        try:
+            self.run()
+        except KeyboardInterrupt:
+            pass
+        self.core_socket.close()
+        self.db_socket.close()
 
 
 class ControllerWorker:
