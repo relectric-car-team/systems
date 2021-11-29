@@ -15,7 +15,7 @@ from systems.core import BrowserProxy, ControllerWorker, CoreServer
 
 _frontend_address = "inproc://frontend"
 _backend_address = "inproc://backend"
-_browser_address = "ws://127.0.0.1:8001"
+_browser_address = "inproc://127.0.0.1:8001"
 
 
 def start_systems():

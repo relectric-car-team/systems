@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+from platform import machine
 from random import randint
 from time import sleep
 
+import spidev
 import zmq
 from loguru import logger
 
@@ -76,18 +78,38 @@ class CanbusNet(Client):
             return
 
         while True:
-            dummy_message = Message(controller="MotorController",
-                                    data={
-                                        "speed": randint(50, 100),
-                                        "voltage": randint(20, 40),
-                                        "temperature": randint(50, 100)
-                                    },
-                                    destinations=[['browser', 'ui'],
-                                                  ['canbus']])
-            self.socket.send_json(dummy_message)
+            if ("arm" in machine()):    # checks if python is running in a rpi
+                speed = self.get_spi("s")
+                if (speed == -1):
+                    speed = randint(50, 100)
+                voltage = self.get_spi("v")
+                if (voltage == -1):
+                    voltage = randint(50, 100)
+            else:
+                speed = randint(50, 100)
+                voltage = randint(50, 100)
+            message = Message(controller="MotorController",
+                              data={
+                                  "speed": speed,
+                                  "voltage": voltage
+                              },
+                              destinations=[['browser', 'ui'], ['canbus']])
+            self.socket.send_json(message)
             incoming_message: Message = self.socket.recv_json()
             logger.debug(f"Can Bus received: {incoming_message}")
             sleep(1)
+
+    def get_spi(self, mode) -> int:
+        spi = spidev.SpiDev()
+        spi.open(0, 0)
+        spi.max_speed_hz = 1000000
+        recieved_byte = spi.xfer2([ord('s')])
+        sleep(0.5)
+        if ((recieved_byte[0] == 0) or (recieved_byte[0] == 255)):
+            spi.close()
+            return -1
+        spi.close()
+        return recieved_byte[0]
 
     def connect_to_server(self) -> bool:
         self.socket.connect(self.core_frontend_address)
