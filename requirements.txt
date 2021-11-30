@@ -5,5 +5,5 @@ loguru==0.5.3; python_version >= "3.5"
 py==1.10.0; python_version >= "3.6" and python_full_version < "3.0.0" and implementation_name == "pypy" or implementation_name == "pypy" and python_version >= "3.6" and python_full_version >= "3.4.0"
 pycparser==2.20; python_version >= "3.6" and python_full_version < "3.0.0" and implementation_name == "pypy" or implementation_name == "pypy" and python_version >= "3.6" and python_full_version >= "3.4.0"
 pyzmq==22.0.3; python_version >= "3.6"
-spidev==3.5
+spidev==3.5; sys_platform == "linux"
 win32-setctime==1.0.3; sys_platform == "win32" and python_version >= "3.5"

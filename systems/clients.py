@@ -3,11 +3,13 @@ from platform import machine
 from random import randint
 from time import sleep
 
-import spidev
 import zmq
 from loguru import logger
 
 from systems.controllers import Message
+
+if ("armv" in machine()):    # if machine is rpi, import spidev
+    import spidev
 
 
 class Client(ABC):
@@ -78,7 +80,7 @@ class CanbusNet(Client):
             return
 
         while True:
-            if ("arm" in machine()):    # checks if python is running in a rpi
+            if ("armv" in machine()):    # checks if python is running in a rpi
                 speed = self.get_spi("s")
                 if (speed == -1):
                     speed = randint(50, 100)
