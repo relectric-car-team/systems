@@ -14,7 +14,7 @@ pydoc-markdown = {version = "^3.10.3", optional = true}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.4"
-pytest-xdist = "^2.2.1"
+pytest-xdist = "^3.0.2"
 pre-commit = "^2.12.1"
 yapf = "^0.31.0"
 pyinstaller = "^4.3"
